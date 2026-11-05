@@ -7,8 +7,8 @@ import pandas as pd
 # CONFIGURAÇÃO DO SUPABASE
 # -----------------------------------------------------------------------------
 # Substitua pelas suas credenciais do painel do Supabase (Project Settings > API)
-SUPABASE_URL = "SUA_URL_SUPABASE"
-SUPABASE_KEY = "SUA_CHAVE_SUPABASE"
+SUPABASE_URL = "https://mytpyxiiduoulyfelnl.supabase.co"
+SUPABASE_KEY = "sb_publishable_IMeUV5B2f8i1LEhE62-Ugw_A-n072W_"
 
 @st.cache_resource
 def init_supabase() -> Client:
