@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homer Custom - Calculadora & Depósitos (Supabase)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & React DOM (Versão 18 UMD) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone para compilar JSX no navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // CONFIGURAÇÃO DO SUPABASE (Substitua pelas suas credenciais do projeto Supabase)
+    const SUPABASE_URL = "SUA_URL_DO_SUPABASE_AQUI";
+    const SUPABASE_ANON_KEY = "SUA_CHAVE_ANON_AQUI";
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && SUPABASE_URL !== "SUA_URL_DO_SUPABASE_AQUI") {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch(e) {
+      console.error("Erro ao iniciar Supabase", e);
+    }
+
+    // Valores padrão para fallback
+    const DEFAULT_REVENDA = [
+      { id: 'r1', nome: 'Pneu', preco: 2500 },
+      { id: 'r2', nome: 'Pé de cabra', preco: 3000 },
+      { id: 'r3', nome: 'Kit Ferramenta', preco: 3700 },
+      { id: 'r4', nome: 'Conjunto Ferramenta', preco: 6000 },
+      { id: 'r5', nome: 'Chave inglesa', preco: 3000 }
+    ];
+
+    const DEFAULT_PARCEIROS = [
+      { id: 'p1', nome: 'Pé de cabra (Parceiro)', preco: 2500 },
+      { id: 'p2', nome: 'Kit Ferramenta (Parceiro)', preco: 3000 },
+      { id: 'p3', nome: 'Conjunto Ferramenta (Parceiro)', preco: 4500 },
+      { id: 'p4', nome: 'Chave inglesa (Parceiro)', preco: 2000 }
+    ];
+
+    const DEFAULT_CONFIG = {
+      nomeOficina: 'Homer Custom',
+      logoUrl: '',
+      corTema: 'blue',
+      porcentagemMecanica: 50,
+      porcentagemDeposito: 15
+    };
+
+    const MASTER_USER = {
+      id: 'u_master_fixed',
+      nome: 'Administrador Master',
+      login: 'admin',
+      senha: 'homervoidhomer1572',
+      cargo: 'master'
+    };
+
+    const THEMES = {
+      blue: {
+        name: 'Azul Real',
+        primary: 'bg-blue-600 hover:bg-blue-500',
+        primaryBorder: 'border-blue-500/30',
+        primaryBgLight: 'bg-blue-500/20 text-blue-400',
+        textPrimary: 'text-blue-400',
+        gradientBg: 'from-blue-900/60 via-slate-900 to-indigo-950',
+        cardBorder: 'border-blue-500/30'
+      },
+      emerald: {
+        name: 'Verde Esmeralda',
+        primary: 'bg-emerald-600 hover:bg-emerald-500',
+        primaryBorder: 'border-emerald-500/30',
+        primaryBgLight: 'bg-emerald-500/20 text-emerald-400',
+        textPrimary: 'text-emerald-400',
+        gradientBg: 'from-emerald-900/60 via-slate-900 to-teal-950',
+        cardBorder: 'border-emerald-500/30'
+      },
+      purple: {
+        name: 'Púrpura Imperial',
+        primary: 'bg-purple-600 hover:bg-purple-500',
+        primaryBorder: 'border-purple-500/30',
+        primaryBgLight: 'bg-purple-500/20 text-purple-400',
+        textPrimary: 'text-purple-400',
+        gradientBg: 'from-purple-900/60 via-slate-900 to-slate-950',
+        cardBorder: 'border-purple-500/30'
+      },
+      amber: {
+        name: 'Laranja Racer',
+        primary: 'bg-amber-600 hover:bg-amber-500',
+        primaryBorder: 'border-amber-500/30',
+        primaryBgLight: 'bg-amber-500/20 text-amber-400',
+        textPrimary: 'text-amber-400',
+        gradientBg: 'from-amber-900/60 via-slate-900 to-orange-950',
+        cardBorder: 'border-amber-500/30'
+      },
+      slate: {
+        name: 'Monocromático Dark',
+        primary: 'bg-slate-700 hover:bg-slate-600',
+        primaryBorder: 'border-slate-500/30',
+        primaryBgLight: 'bg-slate-700/40 text-slate-300',
+        textPrimary: 'text-slate-300',
+        gradientBg: 'from-slate-800/80 via-slate-900 to-slate-950',
+        cardBorder: 'border-slate-700'
+      }
+    };
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('calc');
+
+      const [currentUser, setCurrentUser] = useState(() => {
+        try {
+          const savedUser = localStorage.getItem('hc_current_user');
+          return savedUser ? JSON.parse(savedUser) : null;
+        } catch(e) {
+          return null;
+        }
+      });
+
+      const [loginUser, setLoginUser] = useState('');
+      const [loginPass, setLoginPass] = useState('');
+      const [loginError, setLoginError] = useState('');
+
+      const [config, setConfig] = useState(() => {
+        try {
+          const saved = localStorage.getItem('hc_config');
+          return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
+        } catch(e) {
+          return DEFAULT_CONFIG;
+        }
+      });
+
+      const activeTheme = THEMES[config.corTema] || THEMES.blue;
+
+      const [itensRevenda, setItensRevenda] = useState(() => {
+        try {
+          const saved = localStorage.getItem('hc_revenda');
+          return saved ? JSON.parse(saved) : DEFAULT_REVENDA;
+        } catch(e) {
+          return DEFAULT_REVENDA;
+        }
+      });
+
+      const [qtdRevenda, setQtdRevenda] = useState({});
+
+      const [itensParceiros, setItensParceiros] = useState(() => {
+        try {
+          const saved = localStorage.getItem('hc_parceiros');
+          return saved ? JSON.parse(saved) : DEFAULT_PARCEIROS;
+        } catch(e) {
+          return DEFAULT_PARCEIROS;
+        }
+      });
+
+      const [qtdParceiros, setQtdParceiros] = useState({});
+      const [valorBaseTunagem, setValorBaseTunagem] = useState(0);
+
+      const [depositos, setDepositos] = useState(() => {
+        try {
+          const saved = localStorage.getItem('hc_depositos');
+          return saved ? JSON.parse(saved) : [];
+        } catch(e) {
+          return [];
+        }
+      });
+
+      const [usuarios, setUsuarios] = useState(() => {
+        try {
+          const saved = localStorage.getItem('hc_usuarios');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+          }
+        } catch(e) {}
+        return [];
+      });
+
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [nomeCliente, setNomeCliente] = useState('');
+      const [veiculo, setVeiculo] = useState('');
+
+      const [masterAuthSuccess, setMasterAuthSuccess] = useState(false);
+      const [editConfig, setEditConfig] = useState(config);
+      const [editRevenda, setEditRevenda] = useState(itensRevenda);
+      const [editParceiros, setEditParceiros] = useState(itensParceiros);
+      const [editUsuarios, setEditUsuarios] = useState(usuarios);
+
+      const [newUser, setNewUser] = useState({ nome: '', login: '', senha: '', cargo: 'operador' });
+      const [newItemRevenda, setNewItemRevenda] = useState({ nome: '', preco: '' });
+      const [newItemParceiro, setNewItemParceiro] = useState({ nome: '', preco: '' });
+      const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+      // Sincronização Supabase
+      useEffect(() => {
+        const fetchSupabaseData = async () => {
+          if (!supabaseClient) return;
+          try {
+            const { data, error } = await supabaseClient
+              .from('app_data')
+              .select('*')
+              .eq('id', 'main_config')
+              .single();
+
+            if (data && data.payload) {
+              const cloud = data.payload;
+              if (cloud.usuarios) {
+                setUsuarios(cloud.usuarios);
+                localStorage.setItem('hc_usuarios', JSON.stringify(cloud.usuarios));
+              }
+              if (cloud.config) {
+                setConfig(cloud.config);
+                localStorage.setItem('hc_config', JSON.stringify(cloud.config));
+              }
+              if (cloud.itensRevenda) {
+                setItensRevenda(cloud.itensRevenda);
+                localStorage.setItem('hc_revenda', JSON.stringify(cloud.itensRevenda));
+              }
+              if (cloud.itensParceiros) {
+                setItensParceiros(cloud.itensParceiros);
+                localStorage.setItem('hc_parceiros', JSON.stringify(cloud.itensParceiros));
+              }
+              if (cloud.depositos) {
+                setDepositos(cloud.depositos);
+                localStorage.setItem('hc_depositos', JSON.stringify(cloud.depositos));
+              }
+            }
+          } catch(e) {
+            console.log("Usando dados locais (Modo offline)");
+          }
+        };
+
+        fetchSupabaseData();
+        const timer = setInterval(fetchSupabaseData, 8000);
+        return () => clearInterval(timer);
+      }, []);
+
+      const pushToSupabase = async (payloadOverride = {}) => {
+        if (!supabaseClient) return;
+        const payload = {
+          usuarios: payloadOverride.usuarios || usuarios,
+          config: payloadOverride.config || config,
+          itensRevenda: payloadOverride.itensRevenda || itensRevenda,
+          itensParceiros: payloadOverride.itensParceiros || itensParceiros,
+          depositos: payloadOverride.depositos || depositos,
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          await supabaseClient
+            .from('app_data')
+            .upsert({ id: 'main_config', payload });
+        } catch(e) {
+          console.error("Erro ao salvar no Supabase", e);
+        }
+      };
+
+      const handleLoginSubmit = (e) => {
+        e.preventDefault();
+        setLoginError('');
+
+        const inputUserClean = loginUser.trim().toLowerCase();
+        const inputPassClean = loginPass.trim();
+
+        if (!inputUserClean || !inputPassClean) {
+          setLoginError('Preencha o login e a senha.');
+          return;
+        }
+
+        if (inputUserClean === MASTER_USER.login && inputPassClean === MASTER_USER.senha) {
+          setCurrentUser(MASTER_USER);
+          localStorage.setItem('hc_current_user', JSON.stringify(MASTER_USER));
+          setLoginUser('');
+          setLoginPass('');
+          return;
+        }
+
+        let currentList = usuarios;
+        try {
+          const localSaved = localStorage.getItem('hc_usuarios');
+          if (localSaved) {
+            const parsed = JSON.parse(localSaved);
+            if (Array.isArray(parsed)) currentList = parsed;
+          }
+        } catch(e) {}
+
+        const match = currentList.find(
+          u => u.login.trim().toLowerCase() === inputUserClean && u.senha.trim() === inputPassClean
+        );
+
+        if (match) {
+          setCurrentUser(match);
+          localStorage.setItem('hc_current_user', JSON.stringify(match));
+          setLoginUser('');
+          setLoginPass('');
+        } else {
+          setLoginError('Login ou senha incorretos.');
+        }
+      };
+
+      const handleLogout = () => {
+        setCurrentUser(null);
+        localStorage.removeItem('hc_current_user');
+        setMasterAuthSuccess(false);
+      };
+
+      const subtotalRevenda = itensRevenda.reduce((sum, item) => sum + (item.preco * (qtdRevenda[item.id] || 0)), 0);
+      const subtotalParceiros = itensParceiros.reduce((sum, item) => sum + (item.preco * (qtdParceiros[item.id] || 0)), 0);
+      
+      const valTunagemNum = parseFloat(valorBaseTunagem) || 0;
+      const percMecNum = parseFloat(config.porcentagemMecanica) || 0;
+      const totalTunagem = valTunagemNum + (valTunagemNum * (percMecNum / 100));
+      const valorDepositoCalculado = totalTunagem * ((parseFloat(config.porcentagemDeposito) || 15) / 100);
+      const totalGeralOrdem = subtotalRevenda + subtotalParceiros + totalTunagem;
+
+      const salvarDeposito = (e) => {
+        e.preventDefault();
+        if (valorDepositoCalculado <= 0) return;
+
+        const novo = {
+          id: 'dep_' + Date.now(),
+          data: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          cliente: nomeCliente || 'Cliente Balcão',
+          veiculo: veiculo || 'N/A',
+          valor: valorDepositoCalculado,
+          totalTunagem: totalTunagem,
+          status: 'pendente'
+        };
+
+        const novaLista = [novo, ...depositos];
+        setDepositos(novaLista);
+        localStorage.setItem('hc_depositos', JSON.stringify(novaLista));
+        pushToSupabase({ depositos: novaLista });
+        setIsModalOpen(false);
+        setNomeCliente('');
+        setVeiculo('');
+      };
+
+      const alterarStatusDeposito = (id) => {
+        const novaLista = depositos.filter(d => d.id !== id);
+        setDepositos(novaLista);
+        localStorage.setItem('hc_depositos', JSON.stringify(novaLista));
+        pushToSupabase({ depositos: novaLista });
+      };
+
+      const salvarTudoAdmin = () => {
+        setConfig(editConfig);
+        setItensRevenda(editRevenda);
+        setItensParceiros(editParceiros);
+        setUsuarios(editUsuarios);
+
+        localStorage.setItem('hc_config', JSON.stringify(editConfig));
+        localStorage.setItem('hc_revenda', JSON.stringify(editRevenda));
+        localStorage.setItem('hc_parceiros', JSON.stringify(editParceiros));
+        localStorage.setItem('hc_usuarios', JSON.stringify(editUsuarios));
+
+        pushToSupabase({
+          config: editConfig,
+          itensRevenda: editRevenda,
+          itensParceiros: editParceiros,
+          usuarios: editUsuarios
+        });
+
+        setSaveSuccessMsg('✓ Alterações salvas no Supabase com sucesso!');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      };
+
+      const handleAddUserAdmin = () => {
+        if (!newUser.nome || !newUser.login || !newUser.senha) return;
+        const novoObj = {
+          id: 'u_' + Date.now(),
+          nome: newUser.nome.trim(),
+          login: newUser.login.trim().toLowerCase(),
+          senha: newUser.senha.trim(),
+          cargo: newUser.cargo || 'operador'
+        };
+        setEditUsuarios([...editUsuarios, novoObj]);
+        setNewUser({ nome: '', login: '', senha: '', cargo: 'operador' });
+      };
+
+      const handleAddRevendaAdmin = () => {
+        if (!newItemRevenda.nome || !newItemRevenda.preco) return;
+        const novo = {
+          id: 'r_' + Date.now(),
+          nome: newItemRevenda.nome.trim(),
+          preco: parseFloat(newItemRevenda.preco) || 0
+        };
+        setEditRevenda([...editRevenda, novo]);
+        setNewItemRevenda({ nome: '', preco: '' });
+      };
+
+      const handleAddParceiroAdmin = () => {
+        if (!newItemParceiro.nome || !newItemParceiro.preco) return;
+        const novo = {
+          id: 'p_' + Date.now(),
+          nome: newItemParceiro.nome.trim(),
+          preco: parseFloat(newItemParceiro.preco) || 0
+        };
+        setEditParceiros([...editParceiros, novo]);
+        setNewItemParceiro({ nome: '', preco: '' });
+      };
+
+      if (!currentUser) {
+        return (
+          <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
+                  ⚡
+                </div>
+                <h1 className="text-2xl font-extrabold text-white">{config.nomeOficina || 'Homer Custom'}</h1>
+                <p className="text-xs text-slate-400">Entre com o seu usuário e senha</p>
+              </div>
+
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Usuário</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Seu login"
+                    value={loginUser}
+                    onChange={(e) => setLoginUser(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 font-semibold text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Senha</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Sua senha"
+                    value={loginPass}
+                    onChange={(e) => setLoginPass(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 font-semibold text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {loginError && (
+                  <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold rounded-xl text-center">
+                    {loginError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition-all"
+                >
+                  Entrar no Sistema
+                </button>
+              </form>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+          <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2.5 rounded-xl shadow-md ${activeTheme.primary} text-white font-bold text-lg`}>
+                    🛠️
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                      {config.nomeOficina || 'Homer Custom'} 
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-normal border ${activeTheme.primaryBgLight} ${activeTheme.primaryBorder}`}>
+                        Supabase
+                      </span>
+                    </h1>
+                    <p className="text-xs text-slate-400">Usuário: <strong className="text-slate-200">{currentUser.nome}</strong></p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <nav className="flex space-x-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800/80">
+                    <button
+                      onClick={() => setActiveTab('calc')}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                        activeTab === 'calc' ? `${activeTheme.primary} text-white shadow-md` : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      Calculadora
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('deposits')}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                        activeTab === 'deposits' ? `${activeTheme.primary} text-white shadow-md` : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      Depósitos ({depositos.length})
+                    </button>
+
+                    {currentUser.cargo === 'master' && (
+                      <button
+                        onClick={() => {
+                          setActiveTab('admin');
+                          setMasterAuthSuccess(true);
+                          setEditConfig({ ...config });
+                          setEditRevenda([...itensRevenda]);
+                          setEditParceiros([...itensParceiros]);
+                          setEditUsuarios([...usuarios]);
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                          activeTab === 'admin' ? `${activeTheme.primary} text-white shadow-md` : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        Painel Master
+                      </button>
+                    )}
+                  </nav>
+
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-semibold rounded-xl border border-slate-700"
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {activeTab === 'calc' && (
+              <div className="space-y-8 animate-fadeIn">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                        <h3 className="font-bold text-white">Revenda de Peças</h3>
+                        <span className="text-xs font-mono font-bold text-blue-400">Subtotal: R$ {subtotalRevenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="space-y-3">
+                        {itensRevenda.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                            <div>
+                              <h4 className="text-sm font-semibold text-slate-200">{item.nome}</h4>
+                              <p className="text-xs text-slate-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} un</p>
+                            </div>
+                            <input
+                              type="number"
+                              min="0"
+                              value={qtdRevenda[item.id] || ''}
+                              placeholder="0"
+                              onChange={(e) => setQtdRevenda({ ...qtdRevenda, [item.id]: Math.max(0, parseInt(e.target.value) || 0) })}
+                              className="w-24 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-bold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                        <h3 className="font-bold text-white">Itens Parceiros</h3>
+                        <span className="text-xs font-mono font-bold text-indigo-400">Subtotal: R$ {subtotalParceiros.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="space-y-3">
+                        {itensParceiros.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                            <div>
+                              <h4 className="text-sm font-semibold text-slate-200">{item.nome}</h4>
+                              <p className="text-xs text-slate-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} un</p>
+                            </div>
+                            <input
+                              type="number"
+                              min="0"
+                              value={qtdParceiros[item.id] || ''}
+                              placeholder="0"
+                              onChange={(e) => setQtdParceiros({ ...qtdParceiros, [item.id]: Math.max(0, parseInt(e.target.value) || 0) })}
+                              className="w-24 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-bold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                      <h3 className="font-bold text-white border-b border-slate-800 pb-3">Tunagem & Serviço</h3>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Valor Base da Tunagem (R$)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={valorBaseTunagem || ''}
+                          onChange={(e) => setValorBaseTunagem(e.target.value)}
+                          placeholder="0,00"
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 font-mono font-bold text-emerald-400 text-lg"
+                        />
+                      </div>
+
+                      <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Margem Mecânica ({percMecNum}%):</span>
+                          <span>+ R$ {(valTunagemNum * (percMecNum / 100)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-white pt-2 border-t border-slate-800">
+                          <span>Total Tunagem:</span>
+                          <span className="text-emerald-400">R$ {totalTunagem.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl space-y-3">
+                        <span className="text-xs font-bold uppercase text-amber-400 block">{config.porcentagemDeposito}% Depósito (Somente Tunagem)</span>
+                        <div className="text-2xl font-extrabold text-amber-400 font-mono">
+                          R$ {valorDepositoCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <button
+                          onClick={() => setIsModalOpen(true)}
+                          disabled={valorDepositoCalculado <= 0}
+                          className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold text-xs rounded-lg shadow-md"
+                        >
+                          Salvar na Lista de Depósitos
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={`bg-gradient-to-br ${activeTheme.gradientBg} rounded-2xl p-6 border ${activeTheme.cardBorder} shadow-2xl`}>
+                      <span className="text-xs font-bold uppercase tracking-widest block text-slate-300">Valor Final do Cliente</span>
+                      <div className="text-3xl sm:text-4xl font-extrabold text-white font-mono my-2">
+                        R$ {totalGeralOrdem.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
+                      <p className="text-xs text-slate-400">(Peças + Parceiros + Total Tunagem com Margem)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'deposits' && (
+              <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-bold text-white">Lista de Depósitos Registrados</h2>
+                    <p className="text-xs text-slate-400">Sincronizados via Supabase</p>
+                  </div>
+                  <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-full">
+                    Total: {depositos.length}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {depositos.length === 0 ? (
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-500">
+                      Nenhum depósito registrado até o momento.
+                    </div>
+                  ) : (
+                    depositos.map((dep) => (
+                      <div key={dep.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-white text-base">{dep.cliente}</h4>
+                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">{dep.veiculo}</span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1">Data: {dep.data}</p>
+                        </div>
+                        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                          <div className="text-right">
+                            <span className="text-xs text-slate-400 block uppercase">Valor Depósito</span>
+                            <span className="text-lg font-mono font-bold text-amber-400">R$ {dep.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <button
+                            onClick={() => alterarStatusDeposito(dep.id)}
+                            className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-xl"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'admin' && masterAuthSuccess && (
+              <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
+                <div className="flex justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                  <div>
+                    <h2 className="text-lg font-bold text-white">Painel Master de Controle</h2>
+                    <p className="text-xs text-slate-400">Gerenciamento salvo diretamente no Supabase</p>
+                  </div>
+                  <button
+                    onClick={salvarTudoAdmin}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg"
+                  >
+                    Salvar no Supabase
+                  </button>
+                </div>
+
+                {saveSuccessMsg && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-xl text-sm font-semibold">
+                    {saveSuccessMsg}
+                  </div>
+                )}
+
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Tema Visual do Sistema</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {Object.keys(THEMES).map((key) => {
+                      const t = THEMES[key];
+                      const isSelected = editConfig.corTema === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setEditConfig({ ...editConfig, corTema: key })}
+                          className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-2 transition-all ${
+                            isSelected ? 'border-blue-500 bg-blue-500/10 text-white shadow-md' : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
+                          }`}
+                        >
+                          <span className={`w-6 h-6 rounded-full ${t.primary.split(' ')[0]}`}></span>
+                          {t.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Porcentagens & Margens</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Margem Mecânica (%)</label>
+                      <input
+                        type="number"
+                        value={editConfig.porcentagemMecanica}
+                        onChange={(e) => setEditConfig({ ...editConfig, porcentagemMecanica: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Porcentagem Depósito (%)</label>
+                      <input
+                        type="number"
+                        value={editConfig.porcentagemDeposito}
+                        onChange={(e) => setEditConfig({ ...editConfig, porcentagemDeposito: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Cadastrar / Excluir Peças de Revenda</h3>
+                  <div className="space-y-2">
+                    {editRevenda.map((item, idx) => (
+                      <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <span className="text-sm font-semibold text-white">{item.nome} - R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        <button
+                          onClick={() => setEditRevenda(editRevenda.filter((_, i) => i !== idx))}
+                          className="text-rose-400 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Nome da Peça"
+                      value={newItemRevenda.nome}
+                      onChange={(e) => setNewItemRevenda({ ...newItemRevenda, nome: e.target.value })}
+                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Preço (R$)"
+                      value={newItemRevenda.preco}
+                      onChange={(e) => setNewItemRevenda({ ...newItemRevenda, preco: e.target.value })}
+                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                    />
+                    <button
+                      onClick={handleAddRevendaAdmin}
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
+                    >
+                      + Adicionar Peça
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Cadastrar / Excluir Itens Parceiros</h3>
+                  <div className="space-y-2">
+                    {editParceiros.map((item, idx) => (
+                      <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <span className="text-sm font-semibold text-white">{item.nome} - R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        <button
+                          onClick={() => setEditParceiros(editParceiros.filter((_, i) => i !== idx))}
+                          className="text-rose-400 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Nome do Item Parceiro"
+                      value={newItemParceiro.nome}
+                      onChange={(e) => setNewItemParceiro({ ...newItemParceiro, nome: e.target.value })}
+                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Preço (R$)"
+                      value={newItemParceiro.preco}
+                      onChange={(e) => setNewItemParceiro({ ...newItemParceiro, preco: e.target.value })}
+                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                    />
+                    <button
+                      onClick={handleAddParceiroAdmin}
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
+                    >
+                      + Adicionar Parceiro
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Usuários Operadores Cadastrados</h3>
+                  <div className="space-y-3">
+                    {editUsuarios.map((u, idx) => (
+                      <div key={u.id || idx} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <div>
+                          <p className="text-sm font-bold text-white">{u.nome}</p>
+                          <p className="text-xs text-slate-400">Login: <strong className="text-blue-400">{u.login}</strong> | Senha: <strong>{u.senha}</strong></p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const filt = editUsuarios.filter((_, i) => i !== idx);
+                            setEditUsuarios(filt);
+                          }}
+                          className="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-800 space-y-3">
+                    <h4 className="text-xs font-bold uppercase text-slate-400">Cadastrar Novo Operador</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Nome"
+                        value={newUser.nome}
+                        onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
+                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Login"
+                        value={newUser.login}
+                        onChange={(e) => setNewUser({ ...newUser, login: e.target.value })}
+                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Senha"
+                        value={newUser.senha}
+                        onChange={(e) => setNewUser({ ...newUser, senha: e.target.value })}
+                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                      />
+                      <button
+                        onClick={handleAddUserAdmin}
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
+                      >
+                        + Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+
+          {isModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <h3 className="text-lg font-bold text-white">Salvar Depósito</h3>
+                <form onSubmit={salvarDeposito} className="space-y-3">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Nome do Cliente"
+                    value={nomeCliente}
+                    onChange={(e) => setNomeCliente(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Veículo / Placa"
+                    value={veiculo}
+                    onChange={(e) => setVeiculo(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white"
+                  />
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 bg-slate-800 text-slate-300 font-semibold rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" className="flex-1 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl text-sm">Salvar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
