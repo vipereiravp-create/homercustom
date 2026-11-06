@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import base64
 import streamlit as st
@@ -1273,12 +1274,21 @@ with tab_calculo:
                         st.error("Por favor, informe o nome do cliente.")
                     else:
                         try:
-                            supabase.table('depositos').insert({
+                            login_autor = user.get('login', 'admin').strip().lower()
+                            veic_limpo = veic_cli.strip() if veic_cli else "N/A"
+                            veic_salvar = f"{veic_limpo} [@{login_autor}]"
+
+                            res_ins = supabase.table('depositos').insert({
                                 'cliente': nome_cli.strip(),
-                                'veiculo': veic_cli.strip() if veic_cli else "N/A",
+                                'veiculo': veic_salvar,
                                 'valor_deposito': val_deposito,
                                 'total_tunagem': total_tunagem
                             }).execute()
+                            
+                            if res_ins.data and len(res_ins.data) > 0:
+                                novo_cod = str(res_ins.data[0].get('cod_deposito'))
+                                oficina_cfg.setdefault("depositos_autores", {})[novo_cod] = login_autor
+                                save_oficina_config(oficina_cfg)
                             
                             # Ativa flag para limpar todas as informações do cálculo no início do próximo ciclo
                             st.session_state['reset_calculo_needed'] = True
@@ -1288,7 +1298,7 @@ with tab_calculo:
                             st.error(f"Erro ao salvar: {e}")
 
 # =============================================================================
-# ABA 2: LISTA DE DEPÓSITOS (PENDENTES & REALIZADOS)
+# ABA 2: LISTA DE DEPÓSITOS (PENDENTES & REALIZADOS - CONTROLE SIGILOSO POR USUÁRIO)
 # =============================================================================
 def check_deposito_realizado(dep):
     cod_str = str(dep.get('cod_deposito'))
@@ -1299,19 +1309,45 @@ def check_deposito_realizado(dep):
         return True
     return False
 
+def get_deposito_autor(dep):
+    cod_str = str(dep.get('cod_deposito', ''))
+    if cod_str and cod_str in oficina_cfg.get("depositos_autores", {}):
+        return str(oficina_cfg["depositos_autores"][cod_str]).strip().lower()
+    veic = str(dep.get('veiculo', ''))
+    match = re.search(r'\[@([a-zA-Z0-9_\-\.]+)\]', veic)
+    if match:
+        return match.group(1).strip().lower()
+    return "admin"
+
 def get_veiculo_display(dep):
     veic = str(dep.get('veiculo', 'N/A'))
-    return veic.replace("[REALIZADO]", "").strip() or "N/A"
+    veic = veic.replace("[REALIZADO]", "")
+    veic = re.sub(r'\[@[a-zA-Z0-9_\-\.]+\]', '', veic)
+    return veic.strip() or "N/A"
 
 with tab_depositos:
-    st.markdown("<h4 style='font-weight: 800; margin-bottom: 6px;'>📋 Depósitos da Oficina</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-weight: 800; margin-bottom: 4px;'>📋 Depósitos da Oficina</h4>", unsafe_allow_html=True)
+    
+    current_login = user.get('login', '').strip().lower()
+    
+    if is_master:
+        st.markdown("<div style='font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;'>👑 <strong>Visão Geral Master:</strong> Você tem permissão para visualizar, reabrir e excluir depósitos de toda a equipe.</div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div style='font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;'>🔒 <strong>Acesso Sigiloso:</strong> Exibindo exclusivamente os seus depósitos registrados (<strong>@{current_login}</strong>).</div>", unsafe_allow_html=True)
     
     try:
         res_deps = supabase.table('depositos').select('*').order('cod_deposito', desc=True).execute()
-        lista_deps = res_deps.data if res_deps.data else []
+        todos_deps = res_deps.data if res_deps.data else []
     except Exception as e:
-        lista_deps = []
+        todos_deps = []
         st.error(f"Erro ao carregar depósitos: {e}")
+    
+    # Regra de Sigilo Absoluto:
+    # Master enxerga tudo. Usuários comuns/operadores enxergam apenas seus próprios depósitos.
+    if is_master:
+        lista_deps = todos_deps
+    else:
+        lista_deps = [d for d in todos_deps if get_deposito_autor(d) == current_login]
     
     deps_pendentes = [d for d in lista_deps if not check_deposito_realizado(d)]
     deps_realizados = [d for d in lista_deps if check_deposito_realizado(d)]
@@ -1328,6 +1364,13 @@ with tab_depositos:
         else:
             for dep in deps_pendentes:
                 dep_id = dep['cod_deposito']
+                dep_autor = get_deposito_autor(dep)
+                
+                if is_master:
+                    autor_badge = f'<span style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.70rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;">👤 Mecânico: @{dep_autor}</span>'
+                else:
+                    autor_badge = f'<span style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; font-size: 0.70rem; padding: 2px 7px; border-radius: 6px;">👤 Por você</span>'
+                
                 with st.container():
                     st.markdown(f"""
                         <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
@@ -1338,6 +1381,7 @@ with tab_depositos:
                                         <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
                                             {get_veiculo_display(dep)}
                                         </span>
+                                        {autor_badge}
                                         <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
                                             AGUARDANDO DEPÓSITO
                                         </span>
@@ -1366,12 +1410,21 @@ with tab_depositos:
                             st.rerun()
                     with col_del:
                         if st.button("🗑️", key=f"del_dep_{dep_id}", help="Excluir depósito", use_container_width=True):
-                            try:
-                                supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
-                                st.success(f"Depósito #{dep_id} removido!")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Erro ao excluir: {e}")
+                            # Validação de permissão
+                            if not is_master and dep_autor != current_login:
+                                st.error("Acesso negado: você só pode excluir seus próprios depósitos.")
+                            else:
+                                try:
+                                    supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
+                                    if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                        del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                    if str(dep_id) in oficina_cfg.get("depositos_autores", {}):
+                                        del oficina_cfg["depositos_autores"][str(dep_id)]
+                                    save_oficina_config(oficina_cfg)
+                                    st.success(f"Depósito #{dep_id} removido!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Erro ao excluir: {e}")
                                 
                     # Caixa de Confirmação: Sim ou Não
                     if st.session_state.get(f"ask_confirm_dep_{dep_id}", False):
@@ -1389,23 +1442,26 @@ with tab_depositos:
                         col_sim, col_nao = st.columns(2)
                         with col_sim:
                             if st.button("✅ Sim", key=f"btn_sim_dep_{dep_id}", type="primary", use_container_width=True):
-                                try:
-                                    # Marca no Supabase com [REALIZADO]
-                                    veic_atual = dep.get('veiculo', '')
-                                    if "[REALIZADO]" not in veic_atual:
-                                        novo_veic = f"[REALIZADO] {veic_atual}".strip()
-                                        supabase.table('depositos').update({'veiculo': novo_veic}).eq('cod_deposito', dep_id).execute()
+                                if not is_master and dep_autor != current_login:
+                                    st.error("Acesso negado: você só pode confirmar seus próprios depósitos.")
+                                else:
+                                    try:
+                                        # Marca no Supabase com [REALIZADO]
+                                        veic_atual = dep.get('veiculo', '')
+                                        if "[REALIZADO]" not in veic_atual:
+                                            novo_veic = f"[REALIZADO] {veic_atual}".strip()
+                                            supabase.table('depositos').update({'veiculo': novo_veic}).eq('cod_deposito', dep_id).execute()
+                                            
+                                        # Salva também na config local
+                                        oficina_cfg.setdefault("depositos_realizados", {})[str(dep_id)] = True
+                                        save_oficina_config(oficina_cfg)
                                         
-                                    # Salva também na config local
-                                    oficina_cfg.setdefault("depositos_realizados", {})[str(dep_id)] = True
-                                    save_oficina_config(oficina_cfg)
-                                    
-                                    st.session_state[f"ask_confirm_dep_{dep_id}"] = False
-                                    st.success(f"✅ Depósito #{dep_id} confirmado com sucesso e transferido para Depósitos Realizados!")
-                                    st.rerun()
-                                except Exception as e:
-                                    st.error(f"Erro ao confirmar depósito: {e}")
-                                    
+                                        st.session_state[f"ask_confirm_dep_{dep_id}"] = False
+                                        st.success(f"✅ Depósito #{dep_id} confirmado com sucesso e transferido para Depósitos Realizados!")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Erro ao confirmar depósito: {e}")
+                                        
                         with col_nao:
                             if st.button("❌ Não", key=f"btn_nao_dep_{dep_id}", use_container_width=True):
                                 st.session_state[f"ask_confirm_dep_{dep_id}"] = False
@@ -1418,6 +1474,13 @@ with tab_depositos:
         else:
             for dep in deps_realizados:
                 dep_id = dep['cod_deposito']
+                dep_autor = get_deposito_autor(dep)
+                
+                if is_master:
+                    autor_badge = f'<span style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.70rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;">👤 Mecânico: @{dep_autor}</span>'
+                else:
+                    autor_badge = f'<span style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; font-size: 0.70rem; padding: 2px 7px; border-radius: 6px;">👤 Por você</span>'
+                
                 with st.container():
                     st.markdown(f"""
                         <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(34, 197, 94, 0.4); border-left: 5px solid #22c55e; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
@@ -1428,6 +1491,7 @@ with tab_depositos:
                                         <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
                                             {get_veiculo_display(dep)}
                                         </span>
+                                        {autor_badge}
                                         <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
                                             ✅ DEPÓSITO REALIZADO
                                         </span>
@@ -1451,29 +1515,37 @@ with tab_depositos:
                     col_sp, col_reopen, col_del = st.columns([3.0, 1.3, 0.9])
                     with col_reopen:
                         if st.button("↩️ Reabrir", key=f"reopen_dep_{dep_id}", help="Mover de volta para pendentes", use_container_width=True):
-                            try:
-                                clean_v = dep.get('veiculo', '').replace("[REALIZADO]", "").strip() or "N/A"
-                                supabase.table('depositos').update({'veiculo': clean_v}).eq('cod_deposito', dep_id).execute()
-                                
-                                if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
-                                    del oficina_cfg["depositos_realizados"][str(dep_id)]
-                                    save_oficina_config(oficina_cfg)
+                            if not is_master and dep_autor != current_login:
+                                st.error("Acesso negado: você só pode reabrir seus próprios depósitos.")
+                            else:
+                                try:
+                                    clean_v = dep.get('veiculo', '').replace("[REALIZADO]", "").strip() or "N/A"
+                                    supabase.table('depositos').update({'veiculo': clean_v}).eq('cod_deposito', dep_id).execute()
                                     
-                                st.success(f"Depósito #{dep_id} reaberto e movido para Pendentes!")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Erro ao reabrir: {e}")
+                                    if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                        del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                        save_oficina_config(oficina_cfg)
+                                        
+                                    st.success(f"Depósito #{dep_id} reaberto e movido para Pendentes!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Erro ao reabrir: {e}")
                     with col_del:
                         if st.button("🗑️", key=f"del_dep_real_{dep_id}", help="Excluir histórico", use_container_width=True):
-                            try:
-                                supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
-                                if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
-                                    del oficina_cfg["depositos_realizados"][str(dep_id)]
+                            if not is_master and dep_autor != current_login:
+                                st.error("Acesso negado: você só pode excluir seus próprios depósitos.")
+                            else:
+                                try:
+                                    supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
+                                    if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                        del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                    if str(dep_id) in oficina_cfg.get("depositos_autores", {}):
+                                        del oficina_cfg["depositos_autores"][str(dep_id)]
                                     save_oficina_config(oficina_cfg)
-                                st.success(f"Depósito #{dep_id} removido!")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Erro ao excluir: {e}")
+                                    st.success(f"Depósito #{dep_id} removido!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Erro ao excluir: {e}")
 
 # =============================================================================
 # ABA 3: PAINEL MASTER (VISÍVEL APENAS PARA QUEM TIVER O CARGO MASTER!)
