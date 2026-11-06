@@ -172,6 +172,91 @@ st.markdown("""
     input[type="number"], input[type="text"], input[type="password"] {
         border-radius: 10px !important;
     }
+
+    /* -------------------------------------------------------------
+       LINHAS DE ITENS: RESPONSIVAS, COMPACTAS E ALINHADAS LADO A LADO
+       (Impede a quebra em celular, monitor vertical ou meia-tela)
+       ------------------------------------------------------------- */
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7)) !important;
+        border: 1px solid rgba(51, 65, 85, 0.75) !important;
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 9px !important;
+        gap: 12px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:last-child {
+        flex: 0 0 115px !important;
+        width: 115px !important;
+        max-width: 115px !important;
+        min-width: 100px !important;
+    }
+
+    /* Tipografia de destaque do item */
+    .item-title-large {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: #f8fafc !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1.25 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .item-price-tag {
+        font-size: 0.92rem !important;
+        font-weight: 700 !important;
+        font-family: monospace !important;
+    }
+
+    .item-price-tag.revenda {
+        color: #60a5fa !important;
+    }
+
+    .item-price-tag.parceiro {
+        color: #c084fc !important;
+    }
+
+    /* Campo de quantidade ultra compacto para até 4 dígitos */
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-testid="stNumberInput"] {
+        width: 100% !important;
+        max-width: 115px !important;
+        margin-bottom: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-baseweb="input"] {
+        height: 38px !important;
+        border-radius: 10px !important;
+        background-color: #0b1120 !important;
+        border: 1px solid rgba(59, 130, 246, 0.45) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) input[type="number"] {
+        text-align: center !important;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        font-family: monospace !important;
+        color: #ffffff !important;
+        padding: 0 4px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepDown"],
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepUp"] {
+        width: 26px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        color: #cbd5e1 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -403,47 +488,71 @@ with tab_calculo:
 
     # --- SUB-ABA: PEÇAS (REVENDA) ---
     with sub_pecas:
-        st.markdown("<h4 style='margin-bottom: 8px; font-weight: 700;'>📦 Peças de Revenda</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin-bottom: 12px; font-weight: 800; font-size: 1.15rem;'>📦 Peças de Revenda</h4>", unsafe_allow_html=True)
         subtotal_revenda = 0.0
         
         if not itens_revenda:
             st.info("Nenhuma peça cadastrada na categoria revenda.")
         else:
             for item in itens_revenda:
-                c1, c2 = st.columns([3, 1])
+                c1, c2 = st.columns([3.5, 1.2])
                 with c1:
-                    st.markdown(f"**{item['descricao']}**<br><span style='color: #60a5fa; font-family: monospace; font-size: 0.85rem;'>R$ {float(item['valor']):,.2f}</span>", unsafe_allow_html=True)
+                    st.markdown(f"""
+                        <div class="item-card-marker">
+                            <div class="item-title-large">{item['descricao']}</div>
+                            <div class="item-price-tag revenda">R$ {float(item['valor']):,.2f}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
                 with c2:
-                    qtd = st.number_input("Qtd", min_value=0, step=1, key=f"rev_{item['cod_item']}", label_visibility="collapsed")
+                    qtd = st.number_input(
+                        "Qtd",
+                        min_value=0,
+                        max_value=9999,
+                        step=1,
+                        key=f"rev_{item['cod_item']}",
+                        label_visibility="collapsed"
+                    )
                     subtotal_revenda += qtd * float(item['valor'])
             
             st.markdown(f"""
-                <div style="text-align: right; padding: 10px; background: rgba(15,23,42,0.7); border-radius: 10px; margin-top: 8px;">
-                    <span style="color: #94a3b8; font-size: 0.85rem;">Subtotal Revenda: </span>
-                    <strong style="color: #60a5fa; font-size: 1.1rem; font-family: monospace;">R$ {subtotal_revenda:,.2f}</strong>
+                <div style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; margin-top: 10px;">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Revenda: </span>
+                    <strong style="color: #60a5fa; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_revenda:,.2f}</strong>
                 </div>
             """, unsafe_allow_html=True)
 
     # --- SUB-ABA: ITENS PARCEIRO ---
     with sub_parceiros:
-        st.markdown("<h4 style='margin-bottom: 8px; font-weight: 700;'>🤝 Itens de Parceiros</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin-bottom: 12px; font-weight: 800; font-size: 1.15rem;'>🤝 Itens de Parceiros</h4>", unsafe_allow_html=True)
         subtotal_parceiros = 0.0
         
         if not itens_parceiro:
             st.info("Nenhum item de parceiro cadastrado.")
         else:
             for item in itens_parceiro:
-                c1, c2 = st.columns([3, 1])
+                c1, c2 = st.columns([3.5, 1.2])
                 with c1:
-                    st.markdown(f"**{item['descricao']}**<br><span style='color: #c084fc; font-family: monospace; font-size: 0.85rem;'>R$ {float(item['valor']):,.2f}</span>", unsafe_allow_html=True)
+                    st.markdown(f"""
+                        <div class="item-card-marker">
+                            <div class="item-title-large">{item['descricao']}</div>
+                            <div class="item-price-tag parceiro">R$ {float(item['valor']):,.2f}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
                 with c2:
-                    qtd_p = st.number_input("Qtd", min_value=0, step=1, key=f"parc_{item['cod_item']}", label_visibility="collapsed")
+                    qtd_p = st.number_input(
+                        "Qtd",
+                        min_value=0,
+                        max_value=9999,
+                        step=1,
+                        key=f"parc_{item['cod_item']}",
+                        label_visibility="collapsed"
+                    )
                     subtotal_parceiros += qtd_p * float(item['valor'])
 
             st.markdown(f"""
-                <div style="text-align: right; padding: 10px; background: rgba(15,23,42,0.7); border-radius: 10px; margin-top: 8px;">
-                    <span style="color: #94a3b8; font-size: 0.85rem;">Subtotal Parceiros: </span>
-                    <strong style="color: #c084fc; font-size: 1.1rem; font-family: monospace;">R$ {subtotal_parceiros:,.2f}</strong>
+                <div style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(192,132,252,0.3); border-radius: 12px; margin-top: 10px;">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Parceiros: </span>
+                    <strong style="color: #c084fc; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_parceiros:,.2f}</strong>
                 </div>
             """, unsafe_allow_html=True)
 

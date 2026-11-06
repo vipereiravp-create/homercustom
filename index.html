@@ -649,18 +649,19 @@
                       </div>
                       <div className="space-y-3">
                         {itensRevenda.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                            <div>
-                              <h4 className="text-sm font-semibold text-slate-200">{item.nome}</h4>
-                              <p className="text-xs text-slate-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} un</p>
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-base font-extrabold text-white leading-snug truncate">{item.nome}</h4>
+                              <p className="text-xs font-mono font-bold text-blue-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                             </div>
                             <input
                               type="number"
                               min="0"
+                              max="9999"
                               value={qtdRevenda[item.id] || ''}
                               placeholder="0"
-                              onChange={(e) => setQtdRevenda({ ...qtdRevenda, [item.id]: Math.max(0, parseInt(e.target.value) || 0) })}
-                              className="w-24 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-bold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner"
+                              onChange={(e) => setQtdRevenda({ ...qtdRevenda, [item.id]: Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
+                              className="w-20 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-center font-mono font-extrabold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner shrink-0"
                             />
                           </div>
                         ))}
@@ -674,18 +675,19 @@
                       </div>
                       <div className="space-y-3">
                         {itensParceiros.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                            <div>
-                              <h4 className="text-sm font-semibold text-slate-200">{item.nome}</h4>
-                              <p className="text-xs text-slate-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} un</p>
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-base font-extrabold text-white leading-snug truncate">{item.nome}</h4>
+                              <p className="text-xs font-mono font-bold text-purple-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                             </div>
                             <input
                               type="number"
                               min="0"
+                              max="9999"
                               value={qtdParceiros[item.id] || ''}
                               placeholder="0"
-                              onChange={(e) => setQtdParceiros({ ...qtdParceiros, [item.id]: Math.max(0, parseInt(e.target.value) || 0) })}
-                              className="w-24 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-bold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner"
+                              onChange={(e) => setQtdParceiros({ ...qtdParceiros, [item.id]: Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
+                              className="w-20 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-center font-mono font-extrabold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner shrink-0"
                             />
                           </div>
                         ))}
