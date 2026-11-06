@@ -445,6 +445,79 @@ st.markdown("""
         transform: none !important;
     }
 
+    /* Linha de Peça no Painel Master */
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7)) !important;
+        border: 1px solid rgba(59, 130, 246, 0.28) !important;
+        border-radius: 12px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        gap: 6px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row.parceiro) {
+        border-color: rgba(192, 132, 252, 0.35) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) > div[data-testid="column"]:not(:first-child) {
+        flex: 0 0 38px !important;
+        width: 38px !important;
+        max-width: 38px !important;
+        min-width: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) .stMarkdown {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) .stMarkdown p {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) button {
+        height: 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        font-size: 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(30, 41, 59, 0.85) !important;
+        border: 1px solid rgba(59, 130, 246, 0.35) !important;
+        color: #ffffff !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) button:hover {
+        background: rgba(59, 130, 246, 0.35) !important;
+        border-color: #60a5fa !important;
+        transform: scale(1.08) !important;
+    }
+
     .badge-chip {
         display: inline-flex;
         align-items: center;
@@ -1258,14 +1331,31 @@ if is_master:
                     st.success("✅ Parâmetros e Logo salvos com sucesso!")
                     st.rerun()
 
-        # --- SUB-ABA 3: GERENCIAMENTO DE PEÇAS ---
+        # --- SUB-ABA 3: GERENCIAMENTO DE PEÇAS (SEPARAÇÃO POR ABAS) ---
         with tab_itens_master:
+            st.markdown("""
+                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+                    <h5 style="margin: 0; color: #f8fafc; font-weight: 800;">📦 Gerenciamento de Estoque & Peças</h5>
+                    <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.78rem;">
+                        Cadastre, altere e exclua peças de estoque separadas por abas: Revenda e Parceiros.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+
             with st.expander("➕ Cadastrar Nova Peça no Estoque", expanded=False):
                 with st.form("form_novo_item_mod"):
-                    desc_item = st.text_input("Descrição da Peça", placeholder="Ex: Turbo T3/T4")
-                    valor_item = st.number_input("Preço Unitário (R$)", min_value=0.0, step=50.0, format="%.2f")
-                    tipo_item = st.selectbox("Categoria", ["revenda", "parceiro"])
-                    btn_item = st.form_submit_button("Cadastrar Peça", use_container_width=True, type="primary")
+                    c_desc, c_val = st.columns([2.5, 1.2])
+                    with c_desc:
+                        desc_item = st.text_input("Descrição da Peça", placeholder="Ex: Turbo T3/T4, Pastilha de Freio...")
+                    with c_val:
+                        valor_item = st.number_input("Preço Unitário (R$)", min_value=0.0, step=50.0, format="%.2f")
+                    
+                    tipo_item = st.selectbox(
+                        "Categoria da Peça",
+                        options=["revenda", "parceiro"],
+                        format_func=lambda x: "📦 1 - Item Revenda (Oficina)" if x == "revenda" else "🤝 2 - Item Parceiro"
+                    )
+                    btn_item = st.form_submit_button("🏁 Cadastrar Peça", use_container_width=True, type="primary")
                     
                     if btn_item:
                         if desc_item.strip() and valor_item > 0:
@@ -1275,38 +1365,134 @@ if is_master:
                                     'valor': valor_item,
                                     'tipo': tipo_item
                                 }).execute()
-                                st.success("Peça cadastrada com sucesso!")
+                                st.success(f"✅ Peça '{desc_item.strip()}' cadastrada com sucesso!")
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Erro ao cadastrar: {e}")
                         else:
-                            st.warning("Preencha a descrição e um valor maior que zero.")
+                            st.warning("⚠️ Preencha a descrição e um valor maior que zero.")
 
+            # Carrega itens do banco
             try:
-                res_itens = supabase.table('itens').select('*').order('tipo').order('descricao').execute()
+                res_itens = supabase.table('itens').select('*').order('descricao').execute()
                 itens_cadastrados = res_itens.data if res_itens.data else []
             except Exception as e:
                 itens_cadastrados = []
                 st.error(f"Erro ao listar itens: {e}")
 
-            st.write("")
-            st.markdown(f"**Itens Cadastrados ({len(itens_cadastrados)})**")
-            for it in itens_cadastrados:
-                col_info, col_del = st.columns([4, 1])
-                tipo_cor = "#60a5fa" if it.get('tipo') == 'revenda' else "#c084fc"
+            # Separação dos itens em Revenda e Parceiros
+            itens_revenda_master = [it for it in itens_cadastrados if it.get('tipo') == 'revenda']
+            itens_parceiro_master = [it for it in itens_cadastrados if it.get('tipo') == 'parceiro']
+
+            # Abas dedicadas conforme solicitado: 1 - Item Revenda e 2 - Item Parceiro
+            tab_item_revenda, tab_item_parceiro = st.tabs([
+                f"📦 1 - Itens Revenda ({len(itens_revenda_master)})",
+                f"🤝 2 - Itens Parceiros ({len(itens_parceiro_master)})"
+            ])
+
+            def render_item_peca(it, tipo_categoria):
+                cor_preco = "#60a5fa" if tipo_categoria == "revenda" else "#c084fc"
+                badge_tipo = "REVENDA" if tipo_categoria == "revenda" else "PARCEIRO"
+                cls_tipo = "revenda" if tipo_categoria == "revenda" else "parceiro"
+                
+                col_info, col_edit, col_del = st.columns([5.5, 0.6, 0.6])
                 with col_info:
                     st.markdown(f"""
-                        <div style="padding: 6px 0;">
-                            <strong>{it['descricao']}</strong> 
-                            <span style="color: {tipo_cor}; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">[{it.get('tipo', 'revenda')}]</span>
-                            <div style="font-family: monospace; font-size: 0.85rem; color: #94a3b8;">R$ {float(it['valor']):,.2f}</div>
+                        <div class="item-master-row {cls_tipo}">
+                            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; min-width: 0;">
+                                <div style="min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <strong style="color: #ffffff; font-size: 1.05rem;">{it['descricao']}</strong>
+                                        <span style="font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(15,23,42,0.8); border: 1px solid {cor_preco}; color: {cor_preco};">
+                                            {badge_tipo}
+                                        </span>
+                                    </div>
+                                    <div style="color: {cor_preco}; font-size: 0.95rem; font-family: monospace; font-weight: 800; margin-top: 2px;">
+                                        R$ {float(it['valor']):,.2f}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     """, unsafe_allow_html=True)
+                    
+                with col_edit:
+                    if st.button("✏️", key=f"btn_edit_it_{it['cod_item']}", help=f"Alterar {it['descricao']}", use_container_width=True):
+                        edit_key = f"editing_item_{it['cod_item']}"
+                        st.session_state[edit_key] = not st.session_state.get(edit_key, False)
+                        st.rerun()
+                        
                 with col_del:
-                    if st.button("Excluir", key=f"del_item_{it['cod_item']}", use_container_width=True):
+                    if st.button("🗑️", key=f"btn_del_it_{it['cod_item']}", help=f"Remover {it['descricao']}", use_container_width=True):
                         try:
                             supabase.table('itens').delete().eq('cod_item', it['cod_item']).execute()
-                            st.success("Item removido!")
+                            st.success(f"Item '{it['descricao']}' removido!")
                             st.rerun()
                         except Exception as e:
-                            st.error(f"Erro: {e}")
+                            st.error(f"Erro ao excluir: {e}")
+
+                # Formulário inline de edição da peça
+                if st.session_state.get(f"editing_item_{it['cod_item']}", False):
+                    with st.container():
+                        st.markdown(f"""
+                            <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 12px; padding: 12px 14px; margin: -2px 0 12px 0;">
+                                <span style="color: #60a5fa; font-weight: 800; font-size: 0.9rem;">
+                                    ✏️ Alterar Peça: <strong style="color: #ffffff;">{it['descricao']}</strong>
+                                </span>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        with st.form(f"form_editar_item_{it['cod_item']}"):
+                            c_ed_desc, c_ed_val = st.columns([2.5, 1.2])
+                            with c_ed_desc:
+                                edit_desc = st.text_input("Descrição", value=it['descricao'])
+                            with c_ed_val:
+                                edit_val = st.number_input("Preço Unitário (R$)", value=float(it['valor']), min_value=0.0, step=50.0, format="%.2f")
+                                
+                            edit_tipo = st.selectbox(
+                                "Categoria",
+                                options=["revenda", "parceiro"],
+                                index=0 if it.get('tipo') == 'revenda' else 1,
+                                format_func=lambda x: "📦 1 - Item Revenda" if x == "revenda" else "🤝 2 - Item Parceiro"
+                            )
+                            
+                            c_save_it, c_canc_it = st.columns(2)
+                            with c_save_it:
+                                btn_save_it = st.form_submit_button("💾 Salvar Alterações", type="primary", use_container_width=True)
+                            with c_canc_it:
+                                btn_canc_it = st.form_submit_button("❌ Cancelar", use_container_width=True)
+                                
+                            if btn_canc_it:
+                                st.session_state[f"editing_item_{it['cod_item']}"] = False
+                                st.rerun()
+                                
+                            if btn_save_it:
+                                if edit_desc.strip() and edit_val > 0:
+                                    try:
+                                        supabase.table('itens').update({
+                                            'descricao': edit_desc.strip(),
+                                            'valor': edit_val,
+                                            'tipo': edit_tipo
+                                        }).eq('cod_item', it['cod_item']).execute()
+                                        st.session_state[f"editing_item_{it['cod_item']}"] = False
+                                        st.success(f"✅ Peça '{edit_desc.strip()}' atualizada!")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Erro ao salvar: {e}")
+                                else:
+                                    st.warning("⚠️ Preencha descrição e valor válidos.")
+
+            # --- CONTEÚDO DA ABA 1: ITENS REVENDA ---
+            with tab_item_revenda:
+                if not itens_revenda_master:
+                    st.info("Nenhuma peça de revenda cadastrada.")
+                else:
+                    for it in itens_revenda_master:
+                        render_item_peca(it, "revenda")
+
+            # --- CONTEÚDO DA ABA 2: ITENS PARCEIROS ---
+            with tab_item_parceiro:
+                if not itens_parceiro_master:
+                    st.info("Nenhuma peça de parceiro cadastrada.")
+                else:
+                    for it in itens_parceiro_master:
+                        render_item_peca(it, "parceiro")

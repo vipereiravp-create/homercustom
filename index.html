@@ -216,6 +216,7 @@
       const [editingUser, setEditingUser] = useState(null);
       const [newItemRevenda, setNewItemRevenda] = useState({ nome: '', preco: '' });
       const [newItemParceiro, setNewItemParceiro] = useState({ nome: '', preco: '' });
+      const [adminPecasTab, setAdminPecasTab] = useState('revenda');
       const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
       // Sincronização Supabase
@@ -904,81 +905,132 @@
                 </div>
 
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Cadastrar / Excluir Peças de Revenda</h3>
-                  <div className="space-y-2">
-                    {editRevenda.map((item, idx) => (
-                      <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span className="text-sm font-semibold text-white">{item.nome} - R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                        <button
-                          onClick={() => setEditRevenda(editRevenda.filter((_, i) => i !== idx))}
-                          className="text-rose-400 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                    <input
-                      type="text"
-                      placeholder="Nome da Peça"
-                      value={newItemRevenda.nome}
-                      onChange={(e) => setNewItemRevenda({ ...newItemRevenda, nome: e.target.value })}
-                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Preço (R$)"
-                      value={newItemRevenda.preco}
-                      onChange={(e) => setNewItemRevenda({ ...newItemRevenda, preco: e.target.value })}
-                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                    />
-                    <button
-                      onClick={handleAddRevendaAdmin}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
-                    >
-                      + Adicionar Peça
-                    </button>
-                  </div>
-                </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
+                    <div>
+                      <h3 className="text-md font-bold text-white flex items-center gap-2">
+                        <span>📦</span> Gerenciar Estoque & Peças
+                      </h3>
+                      <p className="text-xs text-slate-400">Cadastre e gerencie peças separadas por abas</p>
+                    </div>
 
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Cadastrar / Excluir Itens Parceiros</h3>
-                  <div className="space-y-2">
-                    {editParceiros.map((item, idx) => (
-                      <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span className="text-sm font-semibold text-white">{item.nome} - R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    {/* Abas: 1 - Item Revenda / 2 - Item Parceiro */}
+                    <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
+                      <button
+                        onClick={() => setAdminPecasTab('revenda')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          adminPecasTab === 'revenda' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        📦 1 - Item Revenda ({editRevenda.length})
+                      </button>
+                      <button
+                        onClick={() => setAdminPecasTab('parceiro')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          adminPecasTab === 'parceiro' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        🤝 2 - Item Parceiro ({editParceiros.length})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ABA 1: REVENDA */}
+                  {adminPecasTab === 'revenda' && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        {editRevenda.length === 0 ? (
+                          <p className="text-xs text-slate-500 py-3 text-center">Nenhuma peça de revenda cadastrada.</p>
+                        ) : (
+                          editRevenda.map((item, idx) => (
+                            <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                              <div>
+                                <span className="text-sm font-semibold text-white block">{item.nome}</span>
+                                <span className="text-xs font-mono font-bold text-blue-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                              <button
+                                onClick={() => setEditRevenda(editRevenda.filter((_, i) => i !== idx))}
+                                className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 flex items-center justify-center text-sm transition-all shadow-sm"
+                                title="Excluir Peça"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80">
+                        <input
+                          type="text"
+                          placeholder="Nome da Peça de Revenda"
+                          value={newItemRevenda.nome}
+                          onChange={(e) => setNewItemRevenda({ ...newItemRevenda, nome: e.target.value })}
+                          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Preço (R$)"
+                          value={newItemRevenda.preco}
+                          onChange={(e) => setNewItemRevenda({ ...newItemRevenda, preco: e.target.value })}
+                          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                        />
                         <button
-                          onClick={() => setEditParceiros(editParceiros.filter((_, i) => i !== idx))}
-                          className="text-rose-400 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
+                          onClick={handleAddRevendaAdmin}
+                          className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
                         >
-                          Excluir
+                          + Adicionar Peça Revenda
                         </button>
                       </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                    <input
-                      type="text"
-                      placeholder="Nome do Item Parceiro"
-                      value={newItemParceiro.nome}
-                      onChange={(e) => setNewItemParceiro({ ...newItemParceiro, nome: e.target.value })}
-                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Preço (R$)"
-                      value={newItemParceiro.preco}
-                      onChange={(e) => setNewItemParceiro({ ...newItemParceiro, preco: e.target.value })}
-                      className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                    />
-                    <button
-                      onClick={handleAddParceiroAdmin}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
-                    >
-                      + Adicionar Parceiro
-                    </button>
-                  </div>
+                    </div>
+                  )}
+
+                  {/* ABA 2: PARCEIROS */}
+                  {adminPecasTab === 'parceiro' && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        {editParceiros.length === 0 ? (
+                          <p className="text-xs text-slate-500 py-3 text-center">Nenhum item de parceiro cadastrado.</p>
+                        ) : (
+                          editParceiros.map((item, idx) => (
+                            <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                              <div>
+                                <span className="text-sm font-semibold text-white block">{item.nome}</span>
+                                <span className="text-xs font-mono font-bold text-purple-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                              <button
+                                onClick={() => setEditParceiros(editParceiros.filter((_, i) => i !== idx))}
+                                className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 flex items-center justify-center text-sm transition-all shadow-sm"
+                                title="Excluir Item"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80">
+                        <input
+                          type="text"
+                          placeholder="Nome do Item Parceiro"
+                          value={newItemParceiro.nome}
+                          onChange={(e) => setNewItemParceiro({ ...newItemParceiro, nome: e.target.value })}
+                          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Preço (R$)"
+                          value={newItemParceiro.preco}
+                          onChange={(e) => setNewItemParceiro({ ...newItemParceiro, preco: e.target.value })}
+                          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
+                        />
+                        <button
+                          onClick={handleAddParceiroAdmin}
+                          className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm rounded-xl py-2"
+                        >
+                          + Adicionar Parceiro
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-5">
