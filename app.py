@@ -57,6 +57,19 @@ def processar_upload_imagem(uploaded_file):
 oficina_cfg = load_oficina_config()
 
 # -----------------------------------------------------------------------------
+# ESTADO DO MODO VISUAL (PERSISTÊNCIA LOCAL & SINCRONIZAÇÃO)
+# -----------------------------------------------------------------------------
+if 'modo_visual' not in st.session_state:
+    st.session_state['modo_visual'] = oficina_cfg.get("modo_visual", "🌙 Escuro (Oficina)")
+
+if 'radio_modo_visual' in st.session_state and st.session_state['radio_modo_visual'] != st.session_state['modo_visual']:
+    st.session_state['modo_visual'] = st.session_state['radio_modo_visual']
+    oficina_cfg["modo_visual"] = st.session_state['modo_visual']
+    save_oficina_config(oficina_cfg)
+
+is_claro = (st.session_state.get('modo_visual') == "☀️ Claro")
+
+# -----------------------------------------------------------------------------
 # ESTILOS CSS CUSTOMIZADOS (DESIGN OFICINA MODERNA & MOBILE-FIRST)
 # -----------------------------------------------------------------------------
 st.markdown("""
@@ -614,6 +627,215 @@ st.markdown("""
         background: linear-gradient(90deg, #60a5fa, #3b82f6);
         animation: pushTimerBar 2.0s linear forwards;
     }
+
+    """ + ("""
+    /* =========================================================================
+       TEMA CLARO (OFICINA SOFT / NÃO BRANCO EXTREMO - SLATE METALLIC)
+       ========================================================================= */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {
+        background-color: #e9eef5 !important;
+        color: #1e293b !important;
+    }
+
+    /* Tipografia Geral */
+    h1, h2, h3, h4, h5, h6, label, p, span {
+        color: #0f172a;
+    }
+
+    .top-header-marker h2,
+    .user-title-large {
+        color: #0f172a !important;
+    }
+
+    /* Abas no Tema Claro */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #dbe4f0 !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06) !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        color: #475569 !important;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #0f172a !important;
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        color: #ffffff !important;
+    }
+
+    /* Linhas de Itens de Tunagem / Revenda / Parceiros */
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15) !important;
+    }
+
+    .item-title-large {
+        color: #0f172a !important;
+    }
+
+    .item-sep {
+        color: #94a3b8 !important;
+    }
+
+    .item-price-tag.revenda {
+        color: #2563eb !important;
+    }
+
+    .item-price-tag.parceiro {
+        color: #7c3aed !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-baseweb="input"] {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #94a3b8 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) input[type="number"] {
+        color: #0f172a !important;
+        background-color: #f1f5f9 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepDown"],
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepUp"] {
+        color: #475569 !important;
+    }
+
+    /* Cards de Resumo e Métricas */
+    .metric-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 4px 14px rgba(148, 163, 184, 0.18) !important;
+    }
+
+    .subtotal-summary-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    /* Crachás da Equipe e Usuários */
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-left: 5px solid #2563eb !important;
+        box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row.is-master) {
+        border-left: 5px solid #d97706 !important;
+        background: #fffbeb !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) strong {
+        color: #0f172a !important;
+    }
+
+    .cred-box {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) button {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) button:hover {
+        background: #e2e8f0 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* Peças Painel Master */
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) strong {
+        color: #0f172a !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) button {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-master-row) button:hover {
+        background: #e2e8f0 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* Botões de Ícones do Topo */
+    .icon-btn-container div.stButton > button,
+    .icon-btn-container div[data-testid="stPopover"] > button {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    .icon-btn-container div.stButton > button:hover,
+    .icon-btn-container div[data-testid="stPopover"] > button:hover {
+        background: #f1f5f9 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* Cards de Depósito */
+    .deposito-card-row {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .deposito-card-row strong {
+        color: #0f172a !important;
+    }
+
+    /* Inputs Nativos do Streamlit */
+    div[data-baseweb="input"] {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    div[data-baseweb="input"] input {
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+    }
+
+    div[data-baseweb="select"] {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    div[data-baseweb="popover"],
+    div[data-testid="stPopoverBody"] {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    div[data-testid="stPopoverBody"] p,
+    div[data-testid="stPopoverBody"] label {
+        color: #0f172a !important;
+    }
+
+    /* Expanders */
+    [data-testid="stExpander"] {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    [data-testid="stExpander"] summary {
+        color: #0f172a !important;
+    }
+    """ if is_claro else "") + """
 </style>
 """, unsafe_allow_html=True)
 
@@ -795,14 +1017,20 @@ with col_head_right:
     c_space, c_gear_btn, c_exit_btn = st.columns([2.0, 1.0, 1.0])
     with c_gear_btn:
         with st.popover("⚙️", use_container_width=True):
-            st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px;'>🎨 Modo Visual</p>", unsafe_allow_html=True)
-            st.radio(
+            st.markdown(f"<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px; color: {'#0f172a' if is_claro else '#ffffff'};'>🎨 Modo Visual</p>", unsafe_allow_html=True)
+            current_theme_idx = 1 if st.session_state.get('modo_visual') == '☀️ Claro' else 0
+            opcao_tema_selecionada = st.radio(
                 "Tema",
                 options=["🌙 Escuro (Oficina)", "☀️ Claro"],
-                index=0,
+                index=current_theme_idx,
                 label_visibility="collapsed",
                 key="radio_modo_visual"
             )
+            if opcao_tema_selecionada != st.session_state.get('modo_visual'):
+                st.session_state['modo_visual'] = opcao_tema_selecionada
+                oficina_cfg["modo_visual"] = opcao_tema_selecionada
+                save_oficina_config(oficina_cfg)
+                st.rerun()
     with c_exit_btn:
         if st.button("🚪", key="btn_logout_top", use_container_width=True, help="Sair do sistema"):
             logout_user()
@@ -954,7 +1182,7 @@ with tab_calculo:
                     subtotal_revenda += qtd * float(item['valor'])
             
             st.markdown(f"""
-                <div style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; margin-top: 10px;">
+                <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; margin-top: 10px;">
                     <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Revenda: </span>
                     <strong style="color: #60a5fa; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_revenda:,.2f}</strong>
                 </div>
@@ -990,7 +1218,7 @@ with tab_calculo:
                     subtotal_parceiros += qtd_p * float(item['valor'])
 
             st.markdown(f"""
-                <div style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(192,132,252,0.3); border-radius: 12px; margin-top: 10px;">
+                <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(192,132,252,0.3); border-radius: 12px; margin-top: 10px;">
                     <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Parceiros: </span>
                     <strong style="color: #c084fc; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_parceiros:,.2f}</strong>
                 </div>
@@ -1068,7 +1296,7 @@ with tab_depositos:
         for dep in lista_deps:
             with st.container():
                 st.markdown(f"""
-                    <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
+                    <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                             <div>
                                 <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
