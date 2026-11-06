@@ -1060,6 +1060,14 @@ else:
 # ABA 1: CÁLCULO (TUNAGEM, PEÇAS, PARCEIROS & TOTAL)
 # =============================================================================
 with tab_calculo:
+    # Se solicitado reset após salvar depósito, limpa os campos antes da criação dos widgets
+    if st.session_state.get('reset_calculo_needed'):
+        st.session_state['reset_calculo_needed'] = False
+        st.session_state['input_tunagem_base'] = 0.0
+        for k in list(st.session_state.keys()):
+            if k.startswith("rev_") or k.startswith("parc_"):
+                st.session_state[k] = 0
+
     try:
         res_itens = supabase.table('itens').select('*').order('descricao').execute()
         lista_itens = res_itens.data if res_itens.data else []
@@ -1272,12 +1280,8 @@ with tab_calculo:
                                 'total_tunagem': total_tunagem
                             }).execute()
                             
-                            # Limpa todas as informações do cálculo para um novo cálculo
-                            st.session_state['input_tunagem_base'] = 0.0
-                            for k in list(st.session_state.keys()):
-                                if k.startswith("rev_") or k.startswith("parc_"):
-                                    st.session_state[k] = 0
-                                    
+                            # Ativa flag para limpar todas as informações do cálculo no início do próximo ciclo
+                            st.session_state['reset_calculo_needed'] = True
                             st.success("✅ Depósito registrado com sucesso! Informações limpas para um novo cálculo.")
                             st.rerun()
                         except Exception as e:
