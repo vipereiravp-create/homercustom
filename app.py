@@ -551,6 +551,68 @@ st.markdown("""
         display: inline-block;
         margin-top: 6px;
     }
+
+    /* Animação Push de Boas-Vindas (Duração de 2 segundos) */
+    @keyframes pushWelcomeAnim {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -35px) scale(0.92);
+        }
+        12% {
+            opacity: 1;
+            transform: translate(-50%, 0) scale(1.02);
+        }
+        20% {
+            transform: translate(-50%, 0) scale(1);
+        }
+        78% {
+            opacity: 1;
+            transform: translate(-50%, 0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -45px) scale(0.92);
+            visibility: hidden;
+            display: none;
+        }
+    }
+
+    @keyframes pushTimerBar {
+        0% { width: 100%; }
+        100% { width: 0%; }
+    }
+
+    .welcome-push-banner {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translate(-50%, 0);
+        z-index: 9999999;
+        width: 90%;
+        max-width: 440px;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 58, 138, 0.96));
+        border: 2px solid #3b82f6;
+        border-radius: 18px;
+        padding: 14px 18px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 25px rgba(59, 130, 246, 0.45);
+        pointer-events: none;
+        animation: pushWelcomeAnim 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .welcome-push-timer {
+        width: 100%;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+
+    .welcome-push-timer-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #60a5fa, #3b82f6);
+        animation: pushTimerBar 2.0s linear forwards;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -650,7 +712,7 @@ if not st.session_state['logged_in']:
     st.stop()
 
 # -----------------------------------------------------------------------------
-# MENSAGEM DE BOAS-VINDAS CENTRALIZADA (AO EFETUAR LOGIN)
+# PUSH NOTIFICATION DE BOAS-VINDAS (ANIMAÇÃO AUTOMÁTICA DE 2 SEGUNDOS)
 # -----------------------------------------------------------------------------
 user = st.session_state['user_data']
 is_master = (user.get('cargo') == 'master')
@@ -660,22 +722,31 @@ cargo_icone = "👑" if is_master else "🛠️"
 foto_user_logado = oficina_cfg.get("fotos_usuarios", {}).get(user['login'])
 
 if st.session_state.get('show_welcome'):
+    st.session_state['show_welcome'] = False
+    
     if foto_user_logado:
-        avatar_welcome = f'<img src="{foto_user_logado}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #60a5fa; box-shadow: 0 4px 16px rgba(59,130,246,0.5); margin: 0 auto 12px auto; display: block;" />'
+        avatar_push = f'<img src="{foto_user_logado}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa; box-shadow: 0 2px 10px rgba(59,130,246,0.5); flex-shrink: 0;" />'
     else:
-        avatar_welcome = f'<div style="width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #3b82f6; color: #60a5fa; font-size: 2rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">{cargo_icone}</div>'
+        avatar_push = f'<div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #3b82f6; color: #60a5fa; font-size: 1.5rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">{cargo_icone}</div>'
 
     st.markdown(f"""
-        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 58, 138, 0.95)); border: 2px solid #3b82f6; border-radius: 20px; padding: 24px 20px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.7); margin-bottom: 20px;">
-            {avatar_welcome}
-            <h2 style="color: #ffffff; font-weight: 900; margin: 0 0 4px 0; font-size: 1.6rem;">Bem-vindo à Homer Custom!</h2>
-            <p style="color: #bfdbfe; font-size: 1.05rem; margin: 0 0 14px 0;">Mecânico <strong>{user['nome']}</strong> conectado com sucesso.</p>
+        <div class="welcome-push-banner">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                {avatar_push}
+                <div style="min-width: 0;">
+                    <div style="color: #ffffff; font-weight: 900; font-size: 1.12rem; letter-spacing: -0.01em; line-height: 1.2;">
+                        Bem-vindo à Homer Custom! 🏎️
+                    </div>
+                    <div style="color: #bfdbfe; font-size: 0.82rem; margin-top: 2px;">
+                        Mecânico <strong>{user['nome']}</strong> conectado com sucesso.
+                    </div>
+                </div>
+            </div>
+            <div class="welcome-push-timer">
+                <div class="welcome-push-timer-bar"></div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
-    
-    if st.button("Continuar para o Sistema 🏎️", use_container_width=True, type="primary"):
-        st.session_state['show_welcome'] = False
-        st.rerun()
 
 # -----------------------------------------------------------------------------
 # BARRA SUPERIOR (HEADER NO TOPO DA PÁGINA)
