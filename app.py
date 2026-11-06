@@ -552,26 +552,26 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* Animação Push de Boas-Vindas (Duração de 2 segundos) */
+    /* Animação Push de Boas-Vindas Centralizada no Meio da Tela (Duração de 2 segundos) */
     @keyframes pushWelcomeAnim {
         0% {
             opacity: 0;
-            transform: translate(-50%, -35px) scale(0.92);
+            transform: translate(-50%, -50%) scale(0.85);
         }
-        12% {
+        14% {
             opacity: 1;
-            transform: translate(-50%, 0) scale(1.02);
+            transform: translate(-50%, -50%) scale(1.03);
         }
-        20% {
-            transform: translate(-50%, 0) scale(1);
+        22% {
+            transform: translate(-50%, -50%) scale(1);
         }
         78% {
             opacity: 1;
-            transform: translate(-50%, 0) scale(1);
+            transform: translate(-50%, -50%) scale(1);
         }
         100% {
             opacity: 0;
-            transform: translate(-50%, -45px) scale(0.92);
+            transform: translate(-50%, -50%) scale(0.85);
             visibility: hidden;
             display: none;
         }
@@ -584,27 +584,28 @@ st.markdown("""
 
     .welcome-push-banner {
         position: fixed;
-        top: 20px;
+        top: 50%;
         left: 50%;
-        transform: translate(-50%, 0);
+        transform: translate(-50%, -50%);
         z-index: 9999999;
         width: 90%;
-        max-width: 440px;
+        max-width: 480px;
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 58, 138, 0.96));
         border: 2px solid #3b82f6;
-        border-radius: 18px;
-        padding: 14px 18px;
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 25px rgba(59, 130, 246, 0.45);
+        border-radius: 22px;
+        padding: 24px 22px 18px 22px;
+        text-align: center;
+        box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9), 0 0 40px rgba(59, 130, 246, 0.5);
         pointer-events: none;
         animation: pushWelcomeAnim 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .welcome-push-timer {
         width: 100%;
-        height: 3px;
+        height: 4px;
         background: rgba(255, 255, 255, 0.15);
-        border-radius: 3px;
-        margin-top: 10px;
+        border-radius: 4px;
+        margin-top: 14px;
         overflow: hidden;
     }
 
@@ -725,23 +726,19 @@ if st.session_state.get('show_welcome'):
     st.session_state['show_welcome'] = False
     
     if foto_user_logado:
-        avatar_push = f'<img src="{foto_user_logado}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa; box-shadow: 0 2px 10px rgba(59,130,246,0.5); flex-shrink: 0;" />'
+        avatar_push = f'<img src="{foto_user_logado}" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #60a5fa; box-shadow: 0 4px 16px rgba(59,130,246,0.6); margin: 0 auto 12px auto; display: block;" />'
     else:
-        avatar_push = f'<div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #3b82f6; color: #60a5fa; font-size: 1.5rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">{cargo_icone}</div>'
+        avatar_push = f'<div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #3b82f6; color: #60a5fa; font-size: 2rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 4px 16px rgba(59,130,246,0.5);">{cargo_icone}</div>'
 
     st.markdown(f"""
         <div class="welcome-push-banner">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                {avatar_push}
-                <div style="min-width: 0;">
-                    <div style="color: #ffffff; font-weight: 900; font-size: 1.12rem; letter-spacing: -0.01em; line-height: 1.2;">
-                        Bem-vindo à Homer Custom! 🏎️
-                    </div>
-                    <div style="color: #bfdbfe; font-size: 0.82rem; margin-top: 2px;">
-                        Mecânico <strong>{user['nome']}</strong> conectado com sucesso.
-                    </div>
-                </div>
-            </div>
+            {avatar_push}
+            <h3 style="color: #ffffff; font-weight: 900; margin: 0 0 6px 0; font-size: 1.45rem; letter-spacing: -0.01em;">
+                Bem-vindo à Homer Custom! 🏎️
+            </h3>
+            <p style="color: #bfdbfe; font-size: 1rem; margin: 0 0 4px 0;">
+                Mecânico <strong style="color: #ffffff;">{user['nome']}</strong> conectado com sucesso.
+            </p>
             <div class="welcome-push-timer">
                 <div class="welcome-push-timer-bar"></div>
             </div>
