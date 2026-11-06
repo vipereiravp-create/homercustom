@@ -1271,15 +1271,36 @@ with tab_calculo:
                                 'valor_deposito': val_deposito,
                                 'total_tunagem': total_tunagem
                             }).execute()
-                            st.success("✅ Depósito registrado no Supabase com sucesso!")
+                            
+                            # Limpa todas as informações do cálculo para um novo cálculo
+                            st.session_state['input_tunagem_base'] = 0.0
+                            for k in list(st.session_state.keys()):
+                                if k.startswith("rev_") or k.startswith("parc_"):
+                                    st.session_state[k] = 0
+                                    
+                            st.success("✅ Depósito registrado com sucesso! Informações limpas para um novo cálculo.")
+                            st.rerun()
                         except Exception as e:
                             st.error(f"Erro ao salvar: {e}")
 
 # =============================================================================
-# ABA 2: LISTA DE DEPÓSITOS
+# ABA 2: LISTA DE DEPÓSITOS (PENDENTES & REALIZADOS)
 # =============================================================================
+def check_deposito_realizado(dep):
+    cod_str = str(dep.get('cod_deposito'))
+    if cod_str in oficina_cfg.get("depositos_realizados", {}):
+        return True
+    veic = str(dep.get('veiculo', ''))
+    if "[REALIZADO]" in veic:
+        return True
+    return False
+
+def get_veiculo_display(dep):
+    veic = str(dep.get('veiculo', 'N/A'))
+    return veic.replace("[REALIZADO]", "").strip() or "N/A"
+
 with tab_depositos:
-    st.markdown("<h4 style='font-weight: 800; margin-bottom: 6px;'>📋 Depósitos Registrados</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-weight: 800; margin-bottom: 6px;'>📋 Depósitos da Oficina</h4>", unsafe_allow_html=True)
     
     try:
         res_deps = supabase.table('depositos').select('*').order('cod_deposito', desc=True).execute()
@@ -1288,46 +1309,167 @@ with tab_depositos:
         lista_deps = []
         st.error(f"Erro ao carregar depósitos: {e}")
     
-    if len(lista_deps) == 0:
-        st.info("Nenhum depósito registrado no momento.")
-    else:
-        st.caption(f"Total de {len(lista_deps)} registro(s) encontrado(s).")
-        
-        for dep in lista_deps:
-            with st.container():
-                st.markdown(f"""
-                    <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                            <div>
-                                <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
-                                <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">
-                                    {dep.get('veiculo', 'N/A')}
-                                </span>
-                                <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;">
-                                    Cód: #{dep.get('cod_deposito')} · Data: {str(dep.get('data_criacao', ''))[:16]}
+    deps_pendentes = [d for d in lista_deps if not check_deposito_realizado(d)]
+    deps_realizados = [d for d in lista_deps if check_deposito_realizado(d)]
+
+    tab_dep_pend, tab_dep_real = st.tabs([
+        f"⏳ Pendentes ({len(deps_pendentes)})",
+        f"✅ Depósitos Realizados ({len(deps_realizados)})"
+    ])
+
+    # --- SUB-ABA: DEPÓSITOS PENDENTES ---
+    with tab_dep_pend:
+        if not deps_pendentes:
+            st.info("Nenhum depósito pendente no momento.")
+        else:
+            for dep in deps_pendentes:
+                dep_id = dep['cod_deposito']
+                with st.container():
+                    st.markdown(f"""
+                        <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
+                                        <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
+                                            {get_veiculo_display(dep)}
+                                        </span>
+                                        <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
+                                            AGUARDANDO DEPÓSITO
+                                        </span>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;">
+                                        Cód: #{dep_id} · Data: {str(dep.get('data_criacao', ''))[:16]}
+                                    </div>
                                 </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="color: #fbbf24; font-weight: 800; font-size: 1.15rem; font-family: monospace;">
-                                    R$ {float(dep.get('valor_deposito', 0)):,.2f}
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.72rem;">
-                                    Total: R$ {float(dep.get('total_tunagem', 0)):,.2f}
+                                <div style="text-align: right;">
+                                    <div style="color: #fbbf24; font-weight: 800; font-size: 1.15rem; font-family: monospace;">
+                                        R$ {float(dep.get('valor_deposito', 0)):,.2f}
+                                    </div>
+                                    <div style="color: #94a3b8; font-size: 0.72rem;">
+                                        Total: R$ {float(dep.get('total_tunagem', 0)):,.2f}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                col_sp, col_btn = st.columns([4, 1])
-                with col_btn:
-                    if st.button("🗑️ Excluir", key=f"del_dep_{dep['cod_deposito']}", use_container_width=True):
-                        try:
-                            supabase.table('depositos').delete().eq('cod_deposito', dep['cod_deposito']).execute()
-                            st.success(f"Depósito #{dep['cod_deposito']} removido!")
+                    """, unsafe_allow_html=True)
+                    
+                    # Botões de Ação: Check de Confirmação & Excluir
+                    col_sp, col_check, col_del = st.columns([2.5, 1.8, 0.9])
+                    with col_check:
+                        if st.button("✅ Confirmar Depósito", key=f"btn_check_dep_{dep_id}", use_container_width=True):
+                            st.session_state[f"ask_confirm_dep_{dep_id}"] = True
                             st.rerun()
-                        except Exception as e:
-                            st.error(f"Erro ao excluir: {e}")
+                    with col_del:
+                        if st.button("🗑️", key=f"del_dep_{dep_id}", help="Excluir depósito", use_container_width=True):
+                            try:
+                                supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
+                                st.success(f"Depósito #{dep_id} removido!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao excluir: {e}")
+                                
+                    # Caixa de Confirmação: Sim ou Não
+                    if st.session_state.get(f"ask_confirm_dep_{dep_id}", False):
+                        st.markdown(f"""
+                            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #f59e0b; border-radius: 12px; padding: 14px; margin: 4px 0 12px 0; text-align: center;">
+                                <div style="color: #fbbf24; font-weight: 800; font-size: 1.05rem; margin-bottom: 4px;">
+                                    ⚠️ Confirmação de Depósito
+                                </div>
+                                <div style="color: #ffffff; font-size: 0.92rem; margin-bottom: 12px;">
+                                    Tem certeza que realizou o depósito de <strong>R$ {float(dep.get('valor_deposito', 0)):,.2f}</strong> para <strong>{dep.get('cliente', '')}</strong>?
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        col_sim, col_nao = st.columns(2)
+                        with col_sim:
+                            if st.button("✅ Sim", key=f"btn_sim_dep_{dep_id}", type="primary", use_container_width=True):
+                                try:
+                                    # Marca no Supabase com [REALIZADO]
+                                    veic_atual = dep.get('veiculo', '')
+                                    if "[REALIZADO]" not in veic_atual:
+                                        novo_veic = f"[REALIZADO] {veic_atual}".strip()
+                                        supabase.table('depositos').update({'veiculo': novo_veic}).eq('cod_deposito', dep_id).execute()
+                                        
+                                    # Salva também na config local
+                                    oficina_cfg.setdefault("depositos_realizados", {})[str(dep_id)] = True
+                                    save_oficina_config(oficina_cfg)
+                                    
+                                    st.session_state[f"ask_confirm_dep_{dep_id}"] = False
+                                    st.success(f"✅ Depósito #{dep_id} confirmado com sucesso e transferido para Depósitos Realizados!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Erro ao confirmar depósito: {e}")
+                                    
+                        with col_nao:
+                            if st.button("❌ Não", key=f"btn_nao_dep_{dep_id}", use_container_width=True):
+                                st.session_state[f"ask_confirm_dep_{dep_id}"] = False
+                                st.rerun()
+
+    # --- SUB-ABA: DEPÓSITOS REALIZADOS ---
+    with tab_dep_real:
+        if not deps_realizados:
+            st.info("Nenhum depósito realizado até o momento.")
+        else:
+            for dep in deps_realizados:
+                dep_id = dep['cod_deposito']
+                with st.container():
+                    st.markdown(f"""
+                        <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(34, 197, 94, 0.4); border-left: 5px solid #22c55e; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
+                                        <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
+                                            {get_veiculo_display(dep)}
+                                        </span>
+                                        <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
+                                            ✅ DEPÓSITO REALIZADO
+                                        </span>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;">
+                                        Cód: #{dep_id} · Data: {str(dep.get('data_criacao', ''))[:16]}
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="color: #4ade80; font-weight: 800; font-size: 1.15rem; font-family: monospace;">
+                                        R$ {float(dep.get('valor_deposito', 0)):,.2f}
+                                    </div>
+                                    <div style="color: #94a3b8; font-size: 0.72rem;">
+                                        Total: R$ {float(dep.get('total_tunagem', 0)):,.2f}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    col_sp, col_reopen, col_del = st.columns([3.0, 1.3, 0.9])
+                    with col_reopen:
+                        if st.button("↩️ Reabrir", key=f"reopen_dep_{dep_id}", help="Mover de volta para pendentes", use_container_width=True):
+                            try:
+                                clean_v = dep.get('veiculo', '').replace("[REALIZADO]", "").strip() or "N/A"
+                                supabase.table('depositos').update({'veiculo': clean_v}).eq('cod_deposito', dep_id).execute()
+                                
+                                if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                    del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                    save_oficina_config(oficina_cfg)
+                                    
+                                st.success(f"Depósito #{dep_id} reaberto e movido para Pendentes!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao reabrir: {e}")
+                    with col_del:
+                        if st.button("🗑️", key=f"del_dep_real_{dep_id}", help="Excluir histórico", use_container_width=True):
+                            try:
+                                supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
+                                if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                    del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                    save_oficina_config(oficina_cfg)
+                                st.success(f"Depósito #{dep_id} removido!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao excluir: {e}")
 
 # =============================================================================
 # ABA 3: PAINEL MASTER (VISÍVEL APENAS PARA QUEM TIVER O CARGO MASTER!)
