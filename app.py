@@ -18,11 +18,20 @@ st.set_page_config(
 # -----------------------------------------------------------------------------
 st.markdown("""
 <style>
-    /* Oculta completamente a barra lateral do Streamlit */
+    /* Oculta completamente a barra lateral e a tarja preta superior nativa do Streamlit */
     [data-testid="stSidebar"], section[data-testid="stSidebar"] {
         display: none !important;
     }
     [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    header[data-testid="stHeader"], div[data-testid="stHeader"], .stAppHeader {
+        display: none !important;
+        height: 0 !important;
+        visibility: hidden !important;
+    }
+    #MainMenu, footer {
+        visibility: hidden !important;
         display: none !important;
     }
 
@@ -32,8 +41,8 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 3rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3.5rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
         max-width: 720px !important;
@@ -175,7 +184,7 @@ st.markdown("""
 
     /* -------------------------------------------------------------
        LINHAS DE ITENS: RESPONSIVAS, COMPACTAS E ALINHADAS LADO A LADO
-       (Impede a quebra em celular, monitor vertical ou meia-tela)
+       (Ordem compacta: Nome do Item - R$ X.XXX,XX  |  [ Qtd ])
        ------------------------------------------------------------- */
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) {
         display: flex !important;
@@ -185,9 +194,9 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7)) !important;
         border: 1px solid rgba(51, 65, 85, 0.75) !important;
         border-radius: 14px !important;
-        padding: 10px 14px !important;
-        margin-bottom: 9px !important;
-        gap: 12px !important;
+        padding: 9px 13px !important;
+        margin-bottom: 8px !important;
+        gap: 10px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:first-child {
@@ -197,26 +206,39 @@ st.markdown("""
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:last-child {
-        flex: 0 0 115px !important;
-        width: 115px !important;
-        max-width: 115px !important;
-        min-width: 100px !important;
+        flex: 0 0 110px !important;
+        width: 110px !important;
+        max-width: 110px !important;
+        min-width: 95px !important;
     }
 
-    /* Tipografia de destaque do item */
+    .item-card-marker {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 6px 8px !important;
+    }
+
+    /* Tipografia: Nome do item maior e preço na frente */
     .item-title-large {
-        font-size: 1.15rem !important;
+        font-size: 1.16rem !important;
         font-weight: 800 !important;
-        color: #f8fafc !important;
+        color: #ffffff !important;
         letter-spacing: -0.01em !important;
-        line-height: 1.25 !important;
-        margin-bottom: 2px !important;
+        line-height: 1.2 !important;
+    }
+
+    .item-sep {
+        color: #64748b !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
     }
 
     .item-price-tag {
-        font-size: 0.92rem !important;
-        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
         font-family: monospace !important;
+        white-space: nowrap !important;
     }
 
     .item-price-tag.revenda {
@@ -230,7 +252,7 @@ st.markdown("""
     /* Campo de quantidade ultra compacto para até 4 dígitos */
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-testid="stNumberInput"] {
         width: 100% !important;
-        max-width: 115px !important;
+        max-width: 110px !important;
         margin-bottom: 0 !important;
     }
 
@@ -252,8 +274,11 @@ st.markdown("""
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepDown"],
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) button[data-testid="stNumberInputStepUp"] {
-        width: 26px !important;
+        width: 25px !important;
         height: 36px !important;
+        padding: 0 !important;
+        color: #cbd5e1 !important;
+    }
         padding: 0 !important;
         color: #cbd5e1 !important;
     }
@@ -393,6 +418,17 @@ with col_head_right:
     with c_btn_exit:
         if st.button("Sair", key="btn_logout_top", use_container_width=True):
             logout_user()
+        
+        # Botão de engrenagem abaixo do botão Sair com menu de cores/tema
+        with st.popover("⚙️", use_container_width=True):
+            st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px;'>🎨 Modo Visual</p>", unsafe_allow_html=True)
+            tema_sel = st.radio(
+                "Tema",
+                options=["🌙 Escuro (Oficina)", "☀️ Claro"],
+                index=0,
+                label_visibility="collapsed",
+                key="radio_modo_visual"
+            )
 
 st.write("")
 
@@ -499,8 +535,9 @@ with tab_calculo:
                 with c1:
                     st.markdown(f"""
                         <div class="item-card-marker">
-                            <div class="item-title-large">{item['descricao']}</div>
-                            <div class="item-price-tag revenda">R$ {float(item['valor']):,.2f}</div>
+                            <span class="item-title-large">{item['descricao']}</span>
+                            <span class="item-sep">-</span>
+                            <span class="item-price-tag revenda">R$ {float(item['valor']):,.2f}</span>
                         </div>
                     """, unsafe_allow_html=True)
                 with c2:
@@ -534,8 +571,9 @@ with tab_calculo:
                 with c1:
                     st.markdown(f"""
                         <div class="item-card-marker">
-                            <div class="item-title-large">{item['descricao']}</div>
-                            <div class="item-price-tag parceiro">R$ {float(item['valor']):,.2f}</div>
+                            <span class="item-title-large">{item['descricao']}</span>
+                            <span class="item-sep">-</span>
+                            <span class="item-price-tag parceiro">R$ {float(item['valor']):,.2f}</span>
                         </div>
                     """, unsafe_allow_html=True)
                 with c2:

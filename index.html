@@ -649,10 +649,11 @@
                       </div>
                       <div className="space-y-3">
                         {itensRevenda.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 gap-3">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-base font-extrabold text-white leading-snug truncate">{item.nome}</h4>
-                              <p className="text-xs font-mono font-bold text-blue-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 gap-3">
+                            <div className="min-w-0 flex-1 flex items-center flex-wrap gap-x-2">
+                              <h4 className="text-base font-extrabold text-white leading-snug">{item.nome}</h4>
+                              <span className="text-slate-500 font-bold">-</span>
+                              <span className="text-sm font-mono font-bold text-blue-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                             </div>
                             <input
                               type="number"
@@ -675,10 +676,11 @@
                       </div>
                       <div className="space-y-3">
                         {itensParceiros.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 gap-3">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-base font-extrabold text-white leading-snug truncate">{item.nome}</h4>
-                              <p className="text-xs font-mono font-bold text-purple-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                          <div key={item.id} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 gap-3">
+                            <div className="min-w-0 flex-1 flex items-center flex-wrap gap-x-2">
+                              <h4 className="text-base font-extrabold text-white leading-snug">{item.nome}</h4>
+                              <span className="text-slate-500 font-bold">-</span>
+                              <span className="text-sm font-mono font-bold text-purple-400">R$ {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                             </div>
                             <input
                               type="number"
