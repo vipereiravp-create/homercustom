@@ -7,14 +7,14 @@ import pandas as pd
 # CONFIGURAÇÃO DA PÁGINA (STREAMLIT)
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Homer Custom - Calculadora & Depósitos",
+    page_title="Homer Custom - Oficina & Tunagem",
     page_icon="⚡",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # -----------------------------------------------------------------------------
-# ESTILOS CSS CUSTOMIZADOS (DESIGN MODERNO, MEIA-TELA & MOBILE)
+# ESTILOS CSS CUSTOMIZADOS (DESIGN OFICINA MODERNA & MOBILE-FIRST)
 # -----------------------------------------------------------------------------
 st.markdown("""
 <style>
@@ -23,41 +23,51 @@ st.markdown("""
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
     
-    /* Otimização de margens no topo */
+    /* Layout compacto focado em meia-tela e smartphone */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 3.5rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
         max-width: 680px !important;
     }
 
-    /* Cartão de Resumo e Destaques */
-    .metric-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
-        border: 1px solid rgba(59, 130, 246, 0.25);
-        border-radius: 16px;
-        padding: 18px 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-    
-    .total-banner {
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
-        border: 1px solid rgba(96, 165, 250, 0.4);
+    /* Banners e Cartões com Tema Oficina / Garagem */
+    .garage-header {
+        background: linear-gradient(135deg, #090d16 0%, #172554 50%, #1e1b4b 100%);
+        border: 1px solid rgba(59, 130, 246, 0.35);
         border-radius: 18px;
         padding: 20px;
         text-align: center;
-        box-shadow: 0 12px 28px rgba(30, 58, 138, 0.35);
-        margin: 18px 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        margin-bottom: 16px;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.95));
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+    
+    .total-banner {
+        background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+        border: 1px solid rgba(96, 165, 250, 0.5);
+        border-radius: 18px;
+        padding: 18px;
+        text-align: center;
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.3);
+        margin: 16px 0;
     }
 
     .total-title {
-        color: #93c5fd;
-        font-size: 0.8rem;
-        font-weight: 700;
+        color: #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
         margin-bottom: 4px;
     }
 
@@ -69,12 +79,56 @@ st.markdown("""
         letter-spacing: -0.02em;
     }
 
-    .item-card {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(51, 65, 85, 0.7);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
+    /* Cartão de Crachá de Mecânico / Usuário da Oficina */
+    .mechanic-badge {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border: 1px solid rgba(59, 130, 246, 0.25);
+        border-left: 5px solid #3b82f6;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    
+    .mechanic-badge.master-badge {
+        border-left: 5px solid #f59e0b;
+        background: linear-gradient(135deg, #1c1917 0%, #1e293b 100%);
+    }
+
+    .badge-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .badge-chip-master {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .badge-chip-operador {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .cred-box {
+        background: rgba(2, 6, 23, 0.85);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-top: 6px;
     }
 
     /* Botões estilizados */
@@ -88,7 +142,7 @@ st.markdown("""
     /* Abas modernas */
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
-        background-color: rgba(15, 23, 42, 0.8);
+        background-color: rgba(15, 23, 42, 0.9);
         padding: 6px;
         border-radius: 14px;
         border: 1px solid rgba(51, 65, 85, 0.6);
@@ -104,9 +158,10 @@ st.markdown("""
     }
 
     .stTabs [aria-selected="true"] {
-        background-color: #2563eb !important;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
         color: #ffffff !important;
-        font-weight: 700;
+        font-weight: 800;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
     /* Entradas numéricas e formulários */
@@ -117,7 +172,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# CONFIGURAÇÃO DO SUPABASE (Lê variáveis de ambiente do Render ou usa fallback)
+# CONFIGURAÇÃO DO SUPABASE (Lê variáveis de ambiente do Render ou fallback)
 # -----------------------------------------------------------------------------
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://mytpyxiiducuulyfelnl.supabase.co")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_IMeUV5B2f81iLEhE62-Ugw_A-n072W_")
@@ -133,7 +188,7 @@ except Exception as e:
     supabase = None
 
 # -----------------------------------------------------------------------------
-# GERENCIAMENTO DE SESSÃO E LOGIN
+# GERENCIAMENTO DE SESSÃO E LOGIN ROBUSTO
 # -----------------------------------------------------------------------------
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
@@ -145,17 +200,32 @@ def login_user(login, senha):
         st.error("Serviço do banco de dados indisponível.")
         return
     try:
-        user_clean = login.lower().strip()
+        user_clean = login.strip().lower()
         pass_clean = senha.strip()
-        response = supabase.table('usuarios').select('*').eq('login', user_clean).eq('senha', pass_clean).execute()
-        if response.data and len(response.data) > 0:
+        
+        # Busca sem diferenciar maiúsculas/minúsculas no login
+        response = supabase.table('usuarios').select('*').ilike('login', user_clean).execute()
+        
+        if not response.data or len(response.data) == 0:
+            st.error(f"❌ Mecânico/Usuário '{login.strip()}' não encontrado no sistema.")
+            return
+            
+        user_match = None
+        for u in response.data:
+            # Compara a senha convertida para string e sem espaços acidentais
+            if str(u.get('senha', '')).strip() == pass_clean:
+                user_match = u
+                break
+                
+        if user_match:
             st.session_state['logged_in'] = True
-            st.session_state['user_data'] = response.data[0]
+            st.session_state['user_data'] = user_match
+            st.toast(f"Bem-vindo à oficina, {user_match['nome']}!", icon="🏎️")
             st.rerun()
         else:
-            st.error("Login ou senha incorretos.")
+            st.error("🔒 Senha incorreta. Verifique maiúsculas e caracteres digitados.")
     except Exception as e:
-        st.error(f"Erro ao conectar com o banco de dados: {e}")
+        st.error(f"Erro ao autenticar com o banco de dados: {e}")
 
 def logout_user():
     st.session_state['logged_in'] = False
@@ -163,53 +233,58 @@ def logout_user():
     st.rerun()
 
 # -----------------------------------------------------------------------------
-# TELA DE LOGIN (MODERNA & RESPONSIVA)
+# TELA DE LOGIN (TEMA OFICINA / COCKPIT TUNING)
 # -----------------------------------------------------------------------------
 if not st.session_state['logged_in']:
     st.markdown("""
-        <div style="text-align: center; margin-top: 2rem; margin-bottom: 1.5rem;">
-            <div style="display: inline-block; background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 16px; border-radius: 20px; box-shadow: 0 10px 20px rgba(37,99,235,0.3); font-size: 2rem;">
+        <div class="garage-header">
+            <div style="display: inline-block; background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 14px; border-radius: 18px; box-shadow: 0 8px 24px rgba(37,99,235,0.4); font-size: 1.9rem; margin-bottom: 8px;">
                 ⚡
             </div>
-            <h1 style="margin-top: 12px; margin-bottom: 2px; font-weight: 900; font-size: 1.8rem; color: #ffffff;">Homer Custom</h1>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 0;">Calculadora de Serviços & Gestão de Depósitos</p>
+            <h1 style="margin: 0; font-weight: 900; font-size: 1.8rem; color: #ffffff; letter-spacing: -0.02em;">HOMER CUSTOM</h1>
+            <p style="color: #93c5fd; font-size: 0.85rem; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em;">
+                🛠️ Garagem de Tunagem & Depósitos
+            </p>
         </div>
     """, unsafe_allow_html=True)
     
     with st.container():
-        with st.form("form_login"):
-            st.markdown("<p style='font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 4px;'>Acesse sua conta</p>", unsafe_allow_html=True)
-            usuario_input = st.text_input("Usuário", placeholder="Ex: admin", label_visibility="collapsed")
-            senha_input = st.text_input("Senha", type="password", placeholder="Sua senha", label_visibility="collapsed")
-            submit_btn = st.form_submit_button("Entrar no Sistema", use_container_width=True, type="primary")
+        with st.form("form_login_oficina"):
+            st.markdown("<p style='font-size: 0.85rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;'>🔑 Identificação do Mecânico / Operador</p>", unsafe_allow_html=True)
+            usuario_input = st.text_input("Usuário", placeholder="Ex: admin ou seu login", label_visibility="collapsed")
+            senha_input = st.text_input("Senha", type="password", placeholder="Sua senha de acesso", label_visibility="collapsed")
+            
+            submit_btn = st.form_submit_button("🏎️ Entrar na Oficina", use_container_width=True, type="primary")
             
             if submit_btn:
-                if usuario_input and senha_input:
+                if usuario_input.strip() and senha_input.strip():
                     login_user(usuario_input, senha_input)
                 else:
                     st.warning("Preencha o login e a senha.")
     st.stop()
 
 # -----------------------------------------------------------------------------
-# CABEÇALHO SUPERIOR
+# CABEÇALHO SUPERIOR (USUÁRIO LOGADO)
 # -----------------------------------------------------------------------------
 user = st.session_state['user_data']
 
 header_col1, header_col2 = st.columns([3, 1])
 with header_col1:
+    cargo_badge_color = "#f59e0b" if user['cargo'] == 'master' else "#3b82f6"
+    cargo_icone = "👑" if user['cargo'] == 'master' else "🛠️"
     st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="background: #2563eb; color: white; padding: 6px 10px; border-radius: 10px; font-weight: bold;">⚡</span>
+            <span style="background: {cargo_badge_color}; color: white; padding: 6px 10px; border-radius: 10px; font-weight: bold;">{cargo_icone}</span>
             <div>
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #f8fafc;">Homer Custom</h3>
                 <p style="margin: 0; font-size: 0.78rem; color: #94a3b8;">
-                    <strong>{user['nome']}</strong> · <span style="color: #60a5fa;">{user['cargo'].upper()}</span>
+                    <strong>{user['nome']}</strong> · <span style="color: {cargo_badge_color}; font-weight: bold;">{user['cargo'].upper()}</span>
                 </p>
             </div>
         </div>
     """, unsafe_allow_html=True)
 with header_col2:
-    if st.button("Sair", use_container_width=True):
+    if st.button("🚪 Sair", use_container_width=True):
         logout_user()
 
 st.write("")
@@ -240,13 +315,7 @@ if nav_principal == "🧮 Calculadora":
     itens_revenda = [i for i in lista_itens if i.get('tipo') == 'revenda']
     itens_parceiro = [i for i in lista_itens if i.get('tipo') == 'parceiro']
 
-    # Inicializar quantidades no session_state se necessário
-    if 'qtd_revenda' not in st.session_state:
-        st.session_state['qtd_revenda'] = {}
-    if 'qtd_parceiro' not in st.session_state:
-        st.session_state['qtd_parceiro'] = {}
-
-    # SUB-ABAS PEDIDAS: Tunagem | Peças | Parceiros
+    # SUB-ABAS: Tunagem | Peças | Parceiros
     tab_tunagem, tab_pecas, tab_parceiros = st.tabs([
         "🔧 Tunagem & Serviços",
         f"📦 Peças Revenda ({len(itens_revenda)})",
@@ -351,7 +420,7 @@ if nav_principal == "🧮 Calculadora":
             """, unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
-    # RESUMO TOTAL GERAL (SEMPRE VISÍVEL)
+    # RESUMO TOTAL GERAL
     # -------------------------------------------------------------------------
     total_geral = subtotal_revenda + subtotal_parceiros + total_tunagem
 
@@ -419,11 +488,10 @@ elif nav_principal == "📋 Depósitos":
     else:
         st.caption(f"Total de {len(lista_deps)} registro(s) encontrado(s).")
         
-        # Renderização em cards adaptáveis (ótimo para celular e meia tela)
         for dep in lista_deps:
             with st.container():
                 st.markdown(f"""
-                    <div class="item-card">
+                    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                             <div>
                                 <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
@@ -446,7 +514,6 @@ elif nav_principal == "📋 Depósitos":
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Botão de remoção rápida
                 col_sp, col_btn = st.columns([4, 1])
                 with col_btn:
                     if st.button("🗑️ Excluir", key=f"del_dep_{dep['cod_deposito']}", use_container_width=True):
@@ -458,16 +525,138 @@ elif nav_principal == "📋 Depósitos":
                             st.error(f"Erro ao excluir: {e}")
 
 # -----------------------------------------------------------------------------
-# SEÇÃO 3: PAINEL MASTER (ADMIN)
+# SEÇÃO 3: PAINEL MASTER (ADMIN & EQUIPE DE MECÂNICOS)
 # -----------------------------------------------------------------------------
 elif nav_principal == "⚙️ Painel Master" and user['cargo'] == 'master':
-    st.markdown("<h4 style='font-weight: 800;'>⚙️ Painel Master de Administração</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-weight: 900; letter-spacing: -0.01em;'>⚙️ Painel Master de Administração</h4>", unsafe_allow_html=True)
     
-    tab_itens, tab_users = st.tabs(["📦 Gerenciar Peças/Itens", "👥 Gerenciar Usuários"])
+    tab_users, tab_itens = st.tabs([
+        "👥 Equipe de Mecânicos & Usuários",
+        "📦 Gerenciar Peças / Catálogo"
+    ])
     
-    # GERENCIAMENTO DE ITENS
+    # -------------------------------------------------------------------------
+    # SUB-ABA: EQUIPE DE MECÂNICOS (TEMA OFICINA MODERNA)
+    # -------------------------------------------------------------------------
+    with tab_users:
+        st.markdown("""
+            <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+                <h5 style="margin: 0; color: #f8fafc; font-weight: 800;">🏁 Gerenciamento da Equipe Técnica</h5>
+                <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.78rem;">
+                    Cadastre novos mecânicos ou operadores e gerencie o acesso de cada um aos cálculos e depósitos.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Formulário Moderno de Cadastro de Usuário
+        with st.expander("⚡ Cadastrar Novo Mecânico / Operador", expanded=True):
+            with st.form("form_novo_mecanico_oficina"):
+                c_nom, c_log = st.columns(2)
+                with c_nom:
+                    nome_u = st.text_input("👤 Nome Completo", placeholder="Ex: Roberto Pitstop")
+                with c_log:
+                    login_u = st.text_input("🔑 Login de Acesso", placeholder="Ex: roberto")
+
+                c_sen, c_carg = st.columns(2)
+                with c_sen:
+                    senha_u = st.text_input("🔒 Senha de Acesso", type="password", placeholder="Digite a senha")
+                with c_carg:
+                    cargo_u = st.selectbox(
+                        "🏷️ Cargo / Acesso na Oficina",
+                        options=["operador", "master"],
+                        format_func=lambda x: "🛠️ Mecânico de Pista (Operador)" if x == "operador" else "👑 Chefe da Oficina (Master)"
+                    )
+                
+                st.caption("ℹ️ **Operador**: Acessa calculadora e depósitos. | **Master**: Acesso completo ao painel e equipe.")
+                
+                btn_cadastrar_mecanico = st.form_submit_button("🏁 Adicionar Mecânico à Equipe", use_container_width=True, type="primary")
+                
+                if btn_cadastrar_mecanico:
+                    nome_clean = nome_u.strip()
+                    login_clean = login_u.strip().lower()
+                    senha_clean = senha_u.strip()
+
+                    if not nome_clean or not login_clean or not senha_clean:
+                        st.warning("⚠️ Preencha Nome, Login e Senha para continuar.")
+                    else:
+                        try:
+                            # 1. Verifica se já existe esse login no Supabase
+                            check_user = supabase.table('usuarios').select('login').ilike('login', login_clean).execute()
+                            if check_user.data and len(check_user.data) > 0:
+                                st.error(f"⚠️ O login '{login_clean}' já está em uso por outro membro da oficina!")
+                            else:
+                                # 2. Insere novo usuário no Supabase
+                                supabase.table('usuarios').insert({
+                                    'nome': nome_clean,
+                                    'login': login_clean,
+                                    'senha': senha_clean,
+                                    'cargo': cargo_u
+                                }).execute()
+                                st.success(f"✅ Mecânico '{nome_clean}' registrado com sucesso!")
+                                st.toast(f"Mecânico {login_clean} cadastrado!", icon="🏎️")
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"Erro ao cadastrar usuário no banco de dados: {e}")
+
+        # Listagem da Equipe de Mecânicos Cadastrados
+        st.markdown("<h5 style='margin-top: 18px; margin-bottom: 10px; font-weight: 800;'>📋 Crachás da Equipe Cadastrada</h5>", unsafe_allow_html=True)
+        
+        try:
+            res_users = supabase.table('usuarios').select('*').order('cargo', desc=True).order('nome').execute()
+            users_cadastrados = res_users.data if res_users.data else []
+        except Exception as e:
+            users_cadastrados = []
+            st.error(f"Erro ao listar equipe de mecânicos: {e}")
+
+        if not users_cadastrados:
+            st.info("Nenhum usuário cadastrado.")
+        else:
+            for u in users_cadastrados:
+                is_master = (u.get('cargo') == 'master')
+                badge_class = "master-badge" if is_master else ""
+                chip_class = "badge-chip-master" if is_master else "badge-chip-operador"
+                cargo_label = "👑 Chefe da Oficina" if is_master else "🛠️ Mecânico de Pista"
+                icone_avatar = "🏎️" if is_master else "🔧"
+
+                st.markdown(f"""
+                    <div class="mechanic-badge {badge_class}">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 1.25rem;">{icone_avatar}</span>
+                                    <div>
+                                        <strong style="color: #f8fafc; font-size: 1rem;">{u['nome']}</strong>
+                                        <div style="margin-top: 2px;">
+                                            <span class="badge-chip {chip_class}">{cargo_label}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cred-box">
+                                    Login: <span style="color: #60a5fa; font-weight: bold;">{u['login']}</span> &nbsp;|&nbsp; 
+                                    Senha: <span style="color: #cbd5e1; font-weight: bold;">{u.get('senha', '***')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # Apenas permite excluir se não for o admin principal
+                if u['login'] != 'admin':
+                    col_espaco, col_del = st.columns([3, 1])
+                    with col_del:
+                        if st.button(f"🗑️ Remover", key=f"btn_del_u_{u['cod_usuario']}", use_container_width=True):
+                            try:
+                                supabase.table('usuarios').delete().eq('cod_usuario', u['cod_usuario']).execute()
+                                st.success(f"Mecânico {u['nome']} removido!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao excluir: {e}")
+
+    # -------------------------------------------------------------------------
+    # SUB-ABA: PEÇAS E ITENS
+    # -------------------------------------------------------------------------
     with tab_itens:
-        with st.expander("➕ Cadastrar Novo Item / Peça", expanded=False):
+        with st.expander("➕ Cadastrar Nova Peça no Estoque", expanded=False):
             with st.form("form_novo_item_mod"):
                 desc_item = st.text_input("Descrição da Peça", placeholder="Ex: Turbo T3/T4")
                 valor_item = st.number_input("Preço Unitário (R$)", min_value=0.0, step=50.0, format="%.2f")
@@ -518,57 +707,3 @@ elif nav_principal == "⚙️ Painel Master" and user['cargo'] == 'master':
                         st.rerun()
                     except Exception as e:
                         st.error(f"Erro: {e}")
-
-    # GERENCIAMENTO DE USUÁRIOS
-    with tab_users:
-        with st.expander("➕ Cadastrar Novo Usuário", expanded=False):
-            with st.form("form_novo_user_mod"):
-                nome_u = st.text_input("Nome Completo", placeholder="Ex: Carlos Silva")
-                login_u = st.text_input("Login de Acesso", placeholder="Ex: carlos")
-                senha_u = st.text_input("Senha", type="password", placeholder="Senha de acesso")
-                cargo_u = st.selectbox("Cargo", ["operador", "master"])
-                btn_user = st.form_submit_button("Salvar Usuário", use_container_width=True, type="primary")
-                
-                if btn_user:
-                    if nome_u.strip() and login_u.strip() and senha_u.strip():
-                        try:
-                            supabase.table('usuarios').insert({
-                                'nome': nome_u.strip(),
-                                'login': login_u.lower().strip(),
-                                'senha': senha_u.strip(),
-                                'cargo': cargo_u
-                            }).execute()
-                            st.success("Usuário cadastrado com sucesso!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Erro ao salvar usuário: {e}")
-                    else:
-                        st.warning("Preencha todos os campos obrigatórios.")
-
-        try:
-            res_users = supabase.table('usuarios').select('cod_usuario, nome, login, cargo').order('nome').execute()
-            users_cadastrados = res_users.data if res_users.data else []
-        except Exception as e:
-            users_cadastrados = []
-            st.error(f"Erro ao listar usuários: {e}")
-
-        st.write("")
-        st.markdown(f"**Usuários Ativos ({len(users_cadastrados)})**")
-        for u in users_cadastrados:
-            col_u_info, col_u_del = st.columns([4, 1])
-            with col_u_info:
-                st.markdown(f"""
-                    <div style="padding: 6px 0;">
-                        <strong>{u['nome']}</strong> (<span style="color: #60a5fa;">{u.get('cargo', 'operador').upper()}</span>)
-                        <div style="font-size: 0.8rem; color: #94a3b8;">Login: <code>{u['login']}</code></div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col_u_del:
-                if u['login'] != 'admin':
-                    if st.button("Excluir", key=f"del_u_{u['cod_usuario']}", use_container_width=True):
-                        try:
-                            supabase.table('usuarios').delete().eq('cod_usuario', u['cod_usuario']).execute()
-                            st.success("Usuário removido!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Erro: {e}")

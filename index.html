@@ -222,7 +222,18 @@
         const fetchSupabaseData = async () => {
           if (!supabaseClient) return;
           try {
-            const { data, error } = await supabaseClient
+            // 1. Busca usuários reais na tabela 'usuarios'
+            const { data: usersData } = await supabaseClient
+              .from('usuarios')
+              .select('*');
+            if (usersData && usersData.length > 0) {
+              setUsuarios(usersData);
+              setEditUsuarios(usersData);
+              localStorage.setItem('hc_usuarios', JSON.stringify(usersData));
+            }
+
+            // 2. Busca configurações e depósitos em 'app_data'
+            const { data } = await supabaseClient
               .from('app_data')
               .select('*')
               .eq('id', 'main_config')
@@ -230,10 +241,6 @@
 
             if (data && data.payload) {
               const cloud = data.payload;
-              if (cloud.usuarios) {
-                setUsuarios(cloud.usuarios);
-                localStorage.setItem('hc_usuarios', JSON.stringify(cloud.usuarios));
-              }
               if (cloud.config) {
                 setConfig(cloud.config);
                 localStorage.setItem('hc_config', JSON.stringify(cloud.config));
@@ -252,7 +259,7 @@
               }
             }
           } catch(e) {
-            console.log("Usando dados locais (Modo offline)");
+            console.log("Usando dados locais (Modo offline)", e);
           }
         };
 
@@ -281,7 +288,7 @@
         }
       };
 
-      const handleLoginSubmit = (e) => {
+      const handleLoginSubmit = async (e) => {
         e.preventDefault();
         setLoginError('');
 
@@ -293,6 +300,33 @@
           return;
         }
 
+        // 1. Tenta autenticar diretamente na tabela 'usuarios' do Supabase
+        if (supabaseClient) {
+          try {
+            const { data: dbUsers, error } = await supabaseClient
+              .from('usuarios')
+              .select('*')
+              .ilike('login', inputUserClean);
+
+            if (dbUsers && dbUsers.length > 0) {
+              const matched = dbUsers.find(u => String(u.senha).trim() === inputPassClean);
+              if (matched) {
+                setCurrentUser(matched);
+                localStorage.setItem('hc_current_user', JSON.stringify(matched));
+                setLoginUser('');
+                setLoginPass('');
+                return;
+              } else {
+                setLoginError('🔒 Senha incorreta para o mecânico.');
+                return;
+              }
+            }
+          } catch(err) {
+            console.warn("Erro ao buscar no Supabase, tentando local...", err);
+          }
+        }
+
+        // 2. Fallback Usuário Master fixo
         if (inputUserClean === MASTER_USER.login && inputPassClean === MASTER_USER.senha) {
           setCurrentUser(MASTER_USER);
           localStorage.setItem('hc_current_user', JSON.stringify(MASTER_USER));
@@ -301,6 +335,7 @@
           return;
         }
 
+        // 3. Fallback lista local
         let currentList = usuarios;
         try {
           const localSaved = localStorage.getItem('hc_usuarios');
@@ -311,7 +346,7 @@
         } catch(e) {}
 
         const match = currentList.find(
-          u => u.login.trim().toLowerCase() === inputUserClean && u.senha.trim() === inputPassClean
+          u => u.login.trim().toLowerCase() === inputUserClean && String(u.senha).trim() === inputPassClean
         );
 
         if (match) {
@@ -320,7 +355,7 @@
           setLoginUser('');
           setLoginPass('');
         } else {
-          setLoginError('Login ou senha incorretos.');
+          setLoginError(`❌ Mecânico/Usuário '${inputUserClean}' não encontrado ou senha incorreta.`);
         }
       };
 
@@ -391,17 +426,68 @@
         setTimeout(() => setSaveSuccessMsg(''), 4000);
       };
 
-      const handleAddUserAdmin = () => {
+      const handleAddUserAdmin = async () => {
         if (!newUser.nome || !newUser.login || !newUser.senha) return;
+        const nomeClean = newUser.nome.trim();
+        const loginClean = newUser.login.trim().toLowerCase();
+        const senhaClean = newUser.senha.trim();
+        const cargoClean = newUser.cargo || 'operador';
+
+        if (supabaseClient) {
+          try {
+            const { data, error } = await supabaseClient
+              .from('usuarios')
+              .insert([{
+                nome: nomeClean,
+                login: loginClean,
+                senha: senhaClean,
+                cargo: cargoClean
+              }])
+              .select();
+
+            if (error) {
+              alert("Erro ao salvar mecânico no banco: " + error.message);
+              return;
+            }
+            if (data && data[0]) {
+              setEditUsuarios([...editUsuarios, data[0]]);
+              setUsuarios([...usuarios, data[0]]);
+              setNewUser({ nome: '', login: '', senha: '', cargo: 'operador' });
+              setSaveSuccessMsg('✓ Mecânico registrado com sucesso!');
+              setTimeout(() => setSaveSuccessMsg(''), 3000);
+              return;
+            }
+          } catch(e) {
+            console.error("Erro ao cadastrar usuário no Supabase", e);
+          }
+        }
+
         const novoObj = {
           id: 'u_' + Date.now(),
-          nome: newUser.nome.trim(),
-          login: newUser.login.trim().toLowerCase(),
-          senha: newUser.senha.trim(),
-          cargo: newUser.cargo || 'operador'
+          nome: nomeClean,
+          login: loginClean,
+          senha: senhaClean,
+          cargo: cargoClean
         };
         setEditUsuarios([...editUsuarios, novoObj]);
         setNewUser({ nome: '', login: '', senha: '', cargo: 'operador' });
+      };
+
+      const handleDeleteUserAdmin = async (userId, userLogin) => {
+        if (userLogin === 'admin') {
+          alert("O Administrador Principal (admin) não pode ser excluído.");
+          return;
+        }
+        if (supabaseClient && userId) {
+          try {
+            await supabaseClient.from('usuarios').delete().eq('cod_usuario', userId);
+          } catch(e) {
+            console.error("Erro ao deletar do Supabase", e);
+          }
+        }
+        const filt = editUsuarios.filter(u => (u.cod_usuario || u.id) !== userId);
+        setEditUsuarios(filt);
+        setUsuarios(filt);
       };
 
       const handleAddRevendaAdmin = () => {
@@ -852,57 +938,137 @@
                   </div>
                 </div>
 
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-                  <h3 className="text-md font-bold text-white border-b border-slate-800 pb-3">Usuários Operadores Cadastrados</h3>
-                  <div className="space-y-3">
-                    {editUsuarios.map((u, idx) => (
-                      <div key={u.id || idx} className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <div>
-                          <p className="text-sm font-bold text-white">{u.nome}</p>
-                          <p className="text-xs text-slate-400">Login: <strong className="text-blue-400">{u.login}</strong> | Senha: <strong>{u.senha}</strong></p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            const filt = editUsuarios.filter((_, i) => i !== idx);
-                            setEditUsuarios(filt);
-                          }}
-                          className="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1 bg-rose-500/10 rounded border border-rose-500/20"
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    ))}
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-5">
+                  <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-md font-bold text-white flex items-center gap-2">
+                        <span>🏎️</span> Equipe de Mecânicos & Usuários
+                      </h3>
+                      <p className="text-xs text-slate-400">Controle de crachás e permissões da oficina</p>
+                    </div>
+                    <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg font-bold">
+                      {editUsuarios.length} Membros
+                    </span>
                   </div>
 
+                  {/* Lista de Crachás de Mecânicos */}
+                  <div className="space-y-3">
+                    {editUsuarios.map((u, idx) => {
+                      const isMaster = (u.cargo === 'master');
+                      return (
+                        <div key={u.cod_usuario || u.id || idx} className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          isMaster ? 'bg-amber-950/20 border-amber-500/30' : 'bg-slate-950 border-slate-800'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
+                              isMaster ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                            }`}>
+                              {isMaster ? '👑' : '🔧'}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-white">{u.nome}</p>
+                                <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                                  isMaster ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                }`}>
+                                  {isMaster ? 'Chefe de Oficina' : 'Mecânico de Pista'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-slate-400 mt-1 font-mono flex items-center gap-2">
+                                <span>Login: <strong className="text-blue-400">{u.login}</strong></span>
+                                <span>•</span>
+                                <span>Senha: <strong className="text-slate-200">{u.senha}</strong></span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {u.login !== 'admin' && (
+                            <button
+                              onClick={() => handleDeleteUserAdmin(u.cod_usuario || u.id, u.login)}
+                              className="self-end sm:self-center text-rose-400 hover:text-rose-300 text-xs font-bold px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl border border-rose-500/20 transition-all flex items-center gap-1.5"
+                            >
+                              <span>🗑️</span> Remover
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Formulário Novo Mecânico */}
                   <div className="pt-4 border-t border-slate-800 space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-slate-400">Cadastrar Novo Operador</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <input
-                        type="text"
-                        placeholder="Nome"
-                        value={newUser.nome}
-                        onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
-                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Login"
-                        value={newUser.login}
-                        onChange={(e) => setNewUser({ ...newUser, login: e.target.value })}
-                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Senha"
-                        value={newUser.senha}
-                        onChange={(e) => setNewUser({ ...newUser, senha: e.target.value })}
-                        className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                      />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <span>⚡</span> Adicionar Novo Mecânico à Equipe
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Carlos Silva"
+                          value={newUser.nome}
+                          onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Login</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: carlos"
+                          value={newUser.login}
+                          onChange={(e) => setNewUser({ ...newUser, login: e.target.value })}
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha</label>
+                        <input
+                          type="text"
+                          placeholder="Senha de acesso"
+                          value={newUser.senha}
+                          onChange={(e) => setNewUser({ ...newUser, senha: e.target.value })}
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                      <div className="w-full sm:w-1/2 flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-400">Cargo:</span>
+                        <div className="flex gap-2 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => setNewUser({ ...newUser, cargo: 'operador' })}
+                            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all border ${
+                              (newUser.cargo || 'operador') === 'operador'
+                                ? 'bg-blue-600 border-blue-500 text-white'
+                                : 'bg-slate-950 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            🛠️ Mecânico
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewUser({ ...newUser, cargo: 'master' })}
+                            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all border ${
+                              newUser.cargo === 'master'
+                                ? 'bg-amber-600 border-amber-500 text-white'
+                                : 'bg-slate-950 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            👑 Chefe (Master)
+                          </button>
+                        </div>
+                      </div>
+
                       <button
+                        type="button"
                         onClick={handleAddUserAdmin}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl py-2"
+                        className="w-full sm:w-1/2 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs rounded-xl shadow-lg transition-all"
                       >
-                        + Adicionar
+                        + Cadastrar Mecânico na Oficina
                       </button>
                     </div>
                   </div>
