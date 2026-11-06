@@ -363,20 +363,86 @@ st.markdown("""
         letter-spacing: -0.02em;
     }
 
-    /* Crachá de Mecânico */
-    .mechanic-badge {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border: 1px solid rgba(59, 130, 246, 0.25);
-        border-left: 5px solid #3b82f6;
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    /* Crachá de Mecânico & Linha de Usuário Cadastrado */
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        border-left: 5px solid #3b82f6 !important;
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+        gap: 8px !important;
     }
-    
-    .mechanic-badge.master-badge {
-        border-left: 5px solid #f59e0b;
-        background: linear-gradient(135deg, #1c1917 0%, #1e293b 100%);
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row.is-master) {
+        border-left: 5px solid #f59e0b !important;
+        background: linear-gradient(135deg, #1c1917 0%, #1e293b 100%) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) > div[data-testid="column"]:not(:first-child) {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        max-width: 42px !important;
+        min-width: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) .stMarkdown {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) .stMarkdown p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) button {
+        height: 38px !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        font-size: 1.1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(30, 41, 59, 0.85) !important;
+        border: 1px solid rgba(59, 130, 246, 0.4) !important;
+        color: #ffffff !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) button:hover {
+        background: rgba(59, 130, 246, 0.35) !important;
+        border-color: #60a5fa !important;
+        transform: scale(1.08) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.user-badge-row) button:disabled {
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
     }
 
     .badge-chip {
@@ -989,23 +1055,26 @@ if is_master:
             else:
                 for u in users_cadastrados:
                     u_is_master = (u.get('cargo') == 'master')
-                    badge_class = "master-badge" if u_is_master else ""
                     chip_class = "badge-chip-master" if u_is_master else "badge-chip-operador"
                     cargo_label = "👑 Chefe da Oficina" if u_is_master else "🛠️ Mecânico de Pista"
                     
                     foto_membro = oficina_cfg.get("fotos_usuarios", {}).get(u['login'])
                     if foto_membro:
-                        avatar_card = f'<img src="{foto_membro}" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0;" />'
+                        avatar_card = f'<img src="{foto_membro}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0;" />'
                     else:
-                        avatar_card = f'<div style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #3b82f6; color: #60a5fa; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">{"👑" if u_is_master else "🔧"}</div>'
+                        avatar_card = f'<div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #3b82f6; color: #60a5fa; font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">{"👑" if u_is_master else "🔧"}</div>'
 
-                    st.markdown(f"""
-                        <div class="mechanic-badge {badge_class}">
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    # Card com informações e botões de ação integrados no mesmo quadro (centralizados na vertical)
+                    col_info, col_edit, col_del = st.columns([5.5, 0.6, 0.6])
+                    
+                    with col_info:
+                        master_cls = "is-master" if u_is_master else ""
+                        st.markdown(f"""
+                            <div class="user-badge-row {master_cls}">
                                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
                                     {avatar_card}
                                     <div style="min-width: 0;">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                             <strong style="color: #f8fafc; font-size: 1.05rem;">{u['nome']}</strong>
                                             <span class="badge-chip {chip_class}">{cargo_label}</span>
                                         </div>
@@ -1016,13 +1085,17 @@ if is_master:
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if u['login'] != 'admin':
-                        col_espaco, col_del = st.columns([3, 1])
-                        with col_del:
-                            if st.button(f"🗑️ Remover", key=f"btn_del_u_{u['cod_usuario']}", use_container_width=True):
+                        """, unsafe_allow_html=True)
+                        
+                    with col_edit:
+                        if st.button("✏️", key=f"btn_edit_u_{u['cod_usuario']}", help=f"Alterar dados de {u['nome']}", use_container_width=True):
+                            edit_key = f"editing_u_{u['cod_usuario']}"
+                            st.session_state[edit_key] = not st.session_state.get(edit_key, False)
+                            st.rerun()
+                            
+                    with col_del:
+                        if u['login'] != 'admin':
+                            if st.button("🗑️", key=f"btn_del_u_{u['cod_usuario']}", help=f"Remover {u['nome']}", use_container_width=True):
                                 try:
                                     supabase.table('usuarios').delete().eq('cod_usuario', u['cod_usuario']).execute()
                                     if u['login'] in oficina_cfg.get("fotos_usuarios", {}):
@@ -1032,6 +1105,106 @@ if is_master:
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao excluir: {e}")
+                        else:
+                            st.button("🔒", key=f"btn_admin_lock_{u['cod_usuario']}", disabled=True, help="Administrador principal protegido", use_container_width=True)
+
+                    # Painel de Alteração / Edição de Dados do Usuário
+                    if st.session_state.get(f"editing_u_{u['cod_usuario']}", False):
+                        with st.container():
+                            st.markdown(f"""
+                                <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 14px; padding: 14px 16px; margin: -2px 0 14px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.45);">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="color: #60a5fa; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                                            ✏️ Alterar Dados do Mecânico: <strong style="color: #ffffff;">{u['nome']}</strong>
+                                        </span>
+                                        <span style="font-size: 0.72rem; color: #94a3b8; font-family: monospace;">ID #{u['cod_usuario']}</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Altere os dados de acesso, cargo ou importe uma nova foto 3x4.</p>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            
+                            with st.form(f"form_alterar_usuario_{u['cod_usuario']}"):
+                                c_ed_nome, c_ed_log = st.columns(2)
+                                with c_ed_nome:
+                                    edit_nome = st.text_input("👤 Nome Completo", value=u.get('nome', ''))
+                                with c_ed_log:
+                                    edit_login = st.text_input("🔑 Login de Acesso", value=u.get('login', ''))
+                                
+                                c_ed_sen, c_ed_carg = st.columns(2)
+                                with c_ed_sen:
+                                    edit_senha = st.text_input("🔒 Senha de Acesso", value=u.get('senha', ''))
+                                with c_ed_carg:
+                                    cargo_options = ["operador", "master"]
+                                    cargo_idx = 1 if u.get('cargo') == 'master' else 0
+                                    edit_cargo = st.selectbox(
+                                        "🏷️ Cargo / Acesso na Oficina",
+                                        options=cargo_options,
+                                        index=cargo_idx,
+                                        format_func=lambda x: "🛠️ Mecânico de Pista (Operador)" if x == "operador" else "👑 Chefe da Oficina (Master)"
+                                    )
+                                
+                                edit_foto_up = st.file_uploader(
+                                    "📷 Importar Nova Foto 3x4 do Mecânico (PNG, JPG)",
+                                    type=["png", "jpg", "jpeg", "webp"],
+                                    key=f"edit_foto_upload_{u['cod_usuario']}"
+                                )
+                                
+                                c_btn_salvar, c_btn_canc = st.columns(2)
+                                with c_btn_salvar:
+                                    btn_salvar_alt = st.form_submit_button("💾 Salvar Alterações", type="primary", use_container_width=True)
+                                with c_btn_canc:
+                                    btn_cancelar_alt = st.form_submit_button("❌ Cancelar", use_container_width=True)
+                                
+                                if btn_cancelar_alt:
+                                    st.session_state[f"editing_u_{u['cod_usuario']}"] = False
+                                    st.rerun()
+                                    
+                                if btn_salvar_alt:
+                                    nome_c = edit_nome.strip()
+                                    login_c = edit_login.strip().lower()
+                                    senha_c = edit_senha.strip()
+                                    
+                                    if not nome_c or not login_c or not senha_c:
+                                        st.warning("⚠️ Nome, Login e Senha não podem ficar vazios.")
+                                    else:
+                                        try:
+                                            # Se o login mudou, verifica duplicidade
+                                            if login_c != u['login'].lower():
+                                                chk = supabase.table('usuarios').select('cod_usuario').ilike('login', login_c).execute()
+                                                if chk.data and any(x['cod_usuario'] != u['cod_usuario'] for x in chk.data):
+                                                    st.error(f"⚠️ O login '{login_c}' já está em uso por outro membro da oficina.")
+                                                    st.stop()
+                                                    
+                                            supabase.table('usuarios').update({
+                                                'nome': nome_c,
+                                                'login': login_c,
+                                                'senha': senha_c,
+                                                'cargo': edit_cargo
+                                            }).eq('cod_usuario', u['cod_usuario']).execute()
+                                            
+                                            old_login = u['login'].lower()
+                                            if old_login in oficina_cfg.get("fotos_usuarios", {}) and old_login != login_c:
+                                                oficina_cfg["fotos_usuarios"][login_c] = oficina_cfg["fotos_usuarios"].pop(old_login)
+                                                
+                                            if edit_foto_up is not None:
+                                                b64_nova_foto = processar_upload_imagem(edit_foto_up)
+                                                if b64_nova_foto:
+                                                    oficina_cfg.setdefault("fotos_usuarios", {})[login_c] = b64_nova_foto
+                                                    
+                                            save_oficina_config(oficina_cfg)
+                                            
+                                            # Atualiza sessão se for o usuário logado
+                                            if st.session_state['user_data'] and st.session_state['user_data'].get('cod_usuario') == u['cod_usuario']:
+                                                st.session_state['user_data']['nome'] = nome_c
+                                                st.session_state['user_data']['login'] = login_c
+                                                st.session_state['user_data']['senha'] = senha_c
+                                                st.session_state['user_data']['cargo'] = edit_cargo
+                                                
+                                            st.session_state[f"editing_u_{u['cod_usuario']}"] = False
+                                            st.success(f"✅ Mecânico '{nome_c}' atualizado com sucesso!")
+                                            st.rerun()
+                                        except Exception as e:
+                                            st.error(f"Erro ao salvar alterações: {e}")
 
         # --- SUB-ABA 2: PARÂMETROS E LOGO DA OFICINA ---
         with tab_config_master:

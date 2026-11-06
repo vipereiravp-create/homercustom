@@ -213,6 +213,7 @@
       const [editUsuarios, setEditUsuarios] = useState(usuarios);
 
       const [newUser, setNewUser] = useState({ nome: '', login: '', senha: '', cargo: 'operador' });
+      const [editingUser, setEditingUser] = useState(null);
       const [newItemRevenda, setNewItemRevenda] = useState({ nome: '', preco: '' });
       const [newItemParceiro, setNewItemParceiro] = useState({ nome: '', preco: '' });
       const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
@@ -488,6 +489,44 @@
         const filt = editUsuarios.filter(u => (u.cod_usuario || u.id) !== userId);
         setEditUsuarios(filt);
         setUsuarios(filt);
+      };
+
+      const handleSaveEditedUser = async () => {
+        if (!editingUser) return;
+        const nomeClean = (editingUser.nome || '').trim();
+        const loginClean = (editingUser.login || '').trim().toLowerCase();
+        const senhaClean = (editingUser.senha || '').trim();
+        if (!nomeClean || !loginClean || !senhaClean) {
+          alert("Preencha todos os campos do usuário!");
+          return;
+        }
+
+        const uId = editingUser.cod_usuario || editingUser.id;
+        if (supabaseClient && editingUser.cod_usuario) {
+          try {
+            await supabaseClient.from('usuarios').update({
+              nome: nomeClean,
+              login: loginClean,
+              senha: senhaClean,
+              cargo: editingUser.cargo
+            }).eq('cod_usuario', editingUser.cod_usuario);
+          } catch(e) {
+            console.error("Erro ao atualizar usuário no Supabase", e);
+          }
+        }
+
+        const updated = editUsuarios.map(u => 
+          ((u.cod_usuario || u.id) === uId)
+            ? { ...u, nome: nomeClean, login: loginClean, senha: senhaClean, cargo: editingUser.cargo }
+            : u
+        );
+        setEditUsuarios(updated);
+        setUsuarios(updated);
+        localStorage.setItem('hc_usuarios', JSON.stringify(updated));
+        if (currentUser && (currentUser.cod_usuario || currentUser.id) === uId) {
+          setCurrentUser({ ...currentUser, nome: nomeClean, login: loginClean, senha: senhaClean, cargo: editingUser.cargo });
+        }
+        setEditingUser(null);
       };
 
       const handleAddRevendaAdmin = () => {
@@ -986,15 +1025,96 @@
                             </div>
                           </div>
 
-                          {u.login !== 'admin' && (
+                          <div className="flex items-center gap-2 self-end sm:self-center">
                             <button
-                              onClick={() => handleDeleteUserAdmin(u.cod_usuario || u.id, u.login)}
-                              className="self-end sm:self-center text-rose-400 hover:text-rose-300 text-xs font-bold px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl border border-rose-500/20 transition-all flex items-center gap-1.5"
+                              onClick={() => setEditingUser((editingUser?.cod_usuario === u.cod_usuario || editingUser?.id === u.id) ? null : { ...u })}
+                              className="w-8 h-8 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-sm transition-all shadow-sm"
+                              title="Alterar dados do mecânico"
                             >
-                              <span>🗑️</span> Remover
+                              ✏️
                             </button>
-                          )}
+                            {u.login !== 'admin' && (
+                              <button
+                                onClick={() => handleDeleteUserAdmin(u.cod_usuario || u.id, u.login)}
+                                className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-sm transition-all shadow-sm"
+                                title="Remover mecânico"
+                              >
+                                🗑️
+                              </button>
+                            )}
+                          </div>
                         </div>
+
+                        {/* Painel de Edição Inline */}
+                        {editingUser && ((editingUser.cod_usuario && editingUser.cod_usuario === u.cod_usuario) || (editingUser.id && editingUser.id === u.id)) && (
+                          <div className="p-4 bg-slate-900/90 border border-blue-500/40 rounded-xl space-y-3 mt-2 shadow-lg">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                                <span>✏️</span> Editando Mecânico: <strong className="text-white">{u.nome}</strong>
+                              </span>
+                              <button 
+                                onClick={() => setEditingUser(null)} 
+                                className="text-xs text-slate-400 hover:text-white"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <label className="block text-slate-400 font-bold mb-1">Nome Completo</label>
+                                <input
+                                  type="text"
+                                  value={editingUser.nome}
+                                  onChange={(e) => setEditingUser({ ...editingUser, nome: e.target.value })}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-slate-400 font-bold mb-1">Login</label>
+                                <input
+                                  type="text"
+                                  value={editingUser.login}
+                                  onChange={(e) => setEditingUser({ ...editingUser, login: e.target.value })}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-slate-400 font-bold mb-1">Senha</label>
+                                <input
+                                  type="text"
+                                  value={editingUser.senha}
+                                  onChange={(e) => setEditingUser({ ...editingUser, senha: e.target.value })}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-slate-400 font-bold mb-1">Cargo</label>
+                                <select
+                                  value={editingUser.cargo}
+                                  onChange={(e) => setEditingUser({ ...editingUser, cargo: e.target.value })}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-blue-500"
+                                >
+                                  <option value="operador">🛠️ Mecânico de Pista</option>
+                                  <option value="master">👑 Chefe da Oficina (Master)</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                onClick={handleSaveEditedUser}
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shadow transition-all"
+                              >
+                                💾 Salvar Alterações
+                              </button>
+                              <button
+                                onClick={() => setEditingUser(null)}
+                                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold text-xs transition-all"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       );
                     })}
                   </div>
