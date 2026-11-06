@@ -183,26 +183,72 @@ st.markdown("""
     }
 
     /* -------------------------------------------------------------
-       LINHAS DE ITENS: RESPONSIVAS, COMPACTAS E ALINHADAS LADO A LADO
-       (Ordem compacta: Nome do Item - R$ X.XXX,XX  |  [ Qtd ])
+       HEADER SUPERIOR: HORIZONTAL E ORGANIZADO EM QUALQUER TELA
+       ------------------------------------------------------------- */
+    div[data-testid="stHorizontalBlock"]:has(.top-header-marker) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)) !important;
+        border: 1px solid rgba(59, 130, 246, 0.35) !important;
+        border-radius: 16px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 14px !important;
+        gap: 10px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-header-marker) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-header-marker) > div[data-testid="column"]:last-child {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    .user-title-large {
+        font-size: 1.35rem !important;
+        font-weight: 900 !important;
+        color: #ffffff !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+    }
+
+    /* -------------------------------------------------------------
+       LINHAS DE ITENS: CENTRALIZAÇÃO VERTICAL PERFEITA E COMPACTA
+       (Mantém o padrão horizontal Nome do item - Valor | [ Qtd ])
        ------------------------------------------------------------- */
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: space-between !important;
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7)) !important;
         border: 1px solid rgba(51, 65, 85, 0.75) !important;
         border-radius: 14px !important;
-        padding: 9px 13px !important;
+        padding: 10px 14px !important;
         margin-bottom: 8px !important;
-        gap: 10px !important;
+        gap: 12px !important;
+        min-height: 54px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:first-child {
         flex: 1 1 auto !important;
         width: auto !important;
         min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) > div[data-testid="column"]:last-child {
@@ -210,13 +256,36 @@ st.markdown("""
         width: 110px !important;
         max-width: 110px !important;
         min-width: 95px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-end !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) .stMarkdown {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.item-card-marker) .stMarkdown p {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1.1 !important;
     }
 
     .item-card-marker {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
-        flex-wrap: wrap !important;
-        gap: 6px 8px !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        gap: 8px !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     /* Tipografia: Nome do item maior e preço na frente */
@@ -226,6 +295,9 @@ st.markdown("""
         color: #ffffff !important;
         letter-spacing: -0.01em !important;
         line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .item-sep {
@@ -385,31 +457,31 @@ is_master = (user.get('cargo') == 'master')
 cargo_badge_color = "#f59e0b" if is_master else "#3b82f6"
 cargo_icone = "👑" if is_master else "🛠️"
 
-col_head_left, col_head_right = st.columns([1.7, 1.3])
+col_head_left, col_head_right = st.columns([1.1, 1.3])
 
 with col_head_left:
     st.markdown("""
-        <div style="display: flex; align-items: center; gap: 10px; padding: 4px 0;">
-            <div style="background: linear-gradient(135deg, #2563eb, #1e4ed8); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; box-shadow: 0 4px 14px rgba(37,99,235,0.4); flex-shrink: 0;">
+        <div class="top-header-marker" style="display: flex; align-items: center; gap: 10px; padding: 2px 0;">
+            <div style="background: linear-gradient(135deg, #2563eb, #1e4ed8); color: white; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; box-shadow: 0 4px 14px rgba(37,99,235,0.4); flex-shrink: 0;">
                 ⚡
             </div>
-            <div>
-                <h2 style="margin: 0; font-size: 1.3rem; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; line-height: 1.1;">Homer Custom</h2>
-                <span style="color: #60a5fa; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Oficina & Tunagem</span>
+            <div style="min-width: 0;">
+                <h2 style="margin: 0; font-size: 1.35rem; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; line-height: 1.1; white-space: nowrap;">Homer Custom</h2>
+                <span style="color: #60a5fa; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;">Oficina & Tunagem</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
 with col_head_right:
-    c_user_meta, c_btn_exit = st.columns([2.3, 1])
+    c_user_meta, c_btn_exit, c_btn_gear = st.columns([2.0, 1.0, 0.7])
     with c_user_meta:
         st.markdown(f"""
-            <div style="text-align: right; padding-top: 2px;">
-                <div style="font-weight: 800; font-size: 0.9rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="text-align: right; padding-right: 4px;">
+                <div class="user-title-large">
                     {user['nome']}
                 </div>
-                <div style="margin-top: 2px;">
-                    <span style="background: rgba({ '245, 158, 11' if is_master else '59, 130, 246' }, 0.18); color: {cargo_badge_color}; border: 1px solid {cargo_badge_color}55; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;">
+                <div style="margin-top: 3px;">
+                    <span style="background: rgba({ '245, 158, 11' if is_master else '59, 130, 246' }, 0.2); color: {cargo_badge_color}; border: 1px solid {cargo_badge_color}66; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <span>{cargo_icone}</span> {user['cargo'].upper()}
                     </span>
                 </div>
@@ -418,8 +490,7 @@ with col_head_right:
     with c_btn_exit:
         if st.button("Sair", key="btn_logout_top", use_container_width=True):
             logout_user()
-        
-        # Botão de engrenagem abaixo do botão Sair com menu de cores/tema
+    with c_btn_gear:
         with st.popover("⚙️", use_container_width=True):
             st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px;'>🎨 Modo Visual</p>", unsafe_allow_html=True)
             tema_sel = st.radio(
