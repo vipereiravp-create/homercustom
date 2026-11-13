@@ -493,63 +493,48 @@ st.markdown("""
         transform: scale(0.985) !important;
     }
 
-    /* O botão ocupa o lado esquerdo do card com texto alinhado à esquerda */
+    /* Botão em formato de pill/caixa à esquerda com Nome + Valor na mesma linha */
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button,
     div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button {
-        background: transparent !important;
-        border: none !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        flex-direction: column !important;
-        padding: 2px 4px !important;
-        height: auto !important;
-        min-height: 48px !important;
+        background-color: #181c26 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 6px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 0 10px !important;
         width: 100% !important;
-        box-shadow: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
         cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        box-shadow: none !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button:hover,
     div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button:hover {
-        background: transparent !important;
+        background-color: #242c3d !important;
+        border-color: #3b82f6 !important;
     }
 
-    /* Título do item (primeiro parágrafo do botão) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button p:first-of-type,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button p:first-of-type {
-        font-size: 0.98rem !important;
-        font-weight: 800 !important;
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button:active,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button:active {
+        transform: scale(0.98) !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button p,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button p {
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
         color: #ffffff !important;
-        letter-spacing: -0.01em !important;
-        line-height: 1.25 !important;
         margin: 0 !important;
-        text-align: left !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         width: 100% !important;
-    }
-
-    /* Preço do item (segundo parágrafo do botão) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner.revenda) div.stButton > button p:last-of-type,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner.revenda) div.stButton > button p:last-of-type {
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
-        font-family: monospace !important;
-        color: #60a5fa !important;
-        margin: 2px 0 0 0 !important;
         text-align: left !important;
-    }
-
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner.parceiro) div.stButton > button p:last-of-type,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner.parceiro) div.stButton > button p:last-of-type {
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
-        font-family: monospace !important;
-        color: #c084fc !important;
-        margin: 2px 0 0 0 !important;
-        text-align: left !important;
+        line-height: 38px !important;
     }
 
     /* Caixa de Input Numérico */
@@ -561,23 +546,35 @@ st.markdown("""
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div[data-baseweb="input"],
     div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div[data-baseweb="input"] {
-        height: 34px !important;
-        min-height: 34px !important;
+        height: 38px !important;
+        min-height: 38px !important;
         border-radius: 6px !important;
-        background-color: #1e293b !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        background-color: #181c26 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
         box-shadow: none !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) input[type="number"],
     div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) input[type="number"] {
         text-align: center !important;
-        font-size: 0.98rem !important;
+        font-size: 0.95rem !important;
         font-weight: 800 !important;
         font-family: monospace !important;
         color: #ffffff !important;
         padding: 0 4px !important;
         cursor: text !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) button[data-testid="stNumberInputStepDown"],
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) button[data-testid="stNumberInputStepUp"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) button[data-testid="stNumberInputStepDown"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) button[data-testid="stNumberInputStepUp"] {
+        width: 26px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        color: #cbd5e1 !important;
+        background: transparent !important;
+        border: none !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-testid="stNumberInput"] {
@@ -1723,7 +1720,29 @@ with tab_calculo:
 
     # --- SUB-ABA: PEÇAS REVENDA ---
     with sub_pecas:
-        st.markdown("<h4 style='margin-bottom: 12px; font-weight: 800; font-size: 1.15rem;'>📦 Peças de Revenda</h4>", unsafe_allow_html=True)
+        # Topo: Valor Final para o Cliente (Esquerda) | Subtotal Revenda (Direita)
+        c_top_l, c_top_r = st.columns([1.45, 1.0])
+        with c_top_l:
+            st.markdown(f"""
+                <div class="total-banner-compact">
+                    <div class="total-title-compact">VALOR FINAL PARA O CLIENTE</div>
+                    <div class="total-value-compact">R$ {total_geral_preview:,.2f}</div>
+                    <div class="total-sub-compact">
+                        <span>Peças: <strong>R$ {subtotal_revenda_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Parceiros: <strong>R$ {subtotal_parceiros_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Tunagem: <strong>R$ {total_tunagem_preview:,.2f}</strong></span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+        with c_top_r:
+            st.markdown(f"""
+                <div style="background: rgba(12, 19, 34, 0.95); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 12px; height: 100%; min-height: 84px; display: flex; align-items: center; justify-content: center; padding: 10px 14px; margin-bottom: 8px;">
+                    <span style="font-size: 1.15rem; font-weight: 700; color: #cbd5e1;">Subtotal Revenda: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.3rem;">R$ {subtotal_revenda_preview:,.2f}</strong></span>
+                </div>
+            """, unsafe_allow_html=True)
+
         subtotal_revenda = 0.0
         
         if not itens_revenda:
@@ -1740,7 +1759,7 @@ with tab_calculo:
                             st.markdown('<div class="item-grid-card-inner revenda"></div>', unsafe_allow_html=True)
                             c_btn, c_q = st.columns([1.6, 1.1])
                             with c_btn:
-                                btn_txt = f"{item['descricao']}\n\nR$ {float(item['valor']):,.2f}"
+                                btn_txt = f"{item['descricao']} R$ {float(item['valor']):,.2f}"
                                 if st.button(btn_txt, key=f"btn_card_rev_{item['cod_item']}", use_container_width=True, help="Clique para adicionar +1"):
                                     st.session_state[f"rev_{item['cod_item']}"] = int(st.session_state.get(f"rev_{item['cod_item']}", 0)) + 1
                                     st.rerun()
@@ -1754,17 +1773,32 @@ with tab_calculo:
                                     label_visibility="collapsed"
                                 )
                                 subtotal_revenda += qtd * float(item['valor'])
-            
-            st.markdown(f"""
-                <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; margin-top: 10px;">
-                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Revenda: </span>
-                    <strong style="color: #60a5fa; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_revenda:,.2f}</strong>
-                </div>
-            """, unsafe_allow_html=True)
 
     # --- SUB-ABA: ITENS PARCEIROS ---
     with sub_parceiros:
-        st.markdown("<h4 style='margin-bottom: 12px; font-weight: 800; font-size: 1.15rem;'>🤝 Itens de Parceiros</h4>", unsafe_allow_html=True)
+        # Topo: Valor Final para o Cliente (Esquerda) | Subtotal Parceiros (Direita)
+        c_top_l, c_top_r = st.columns([1.45, 1.0])
+        with c_top_l:
+            st.markdown(f"""
+                <div class="total-banner-compact">
+                    <div class="total-title-compact">VALOR FINAL PARA O CLIENTE</div>
+                    <div class="total-value-compact">R$ {total_geral_preview:,.2f}</div>
+                    <div class="total-sub-compact">
+                        <span>Peças: <strong>R$ {subtotal_revenda_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Parceiros: <strong>R$ {subtotal_parceiros_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Tunagem: <strong>R$ {total_tunagem_preview:,.2f}</strong></span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+        with c_top_r:
+            st.markdown(f"""
+                <div style="background: rgba(12, 19, 34, 0.95); border: 1px solid rgba(192, 132, 252, 0.45); border-radius: 12px; height: 100%; min-height: 84px; display: flex; align-items: center; justify-content: center; padding: 10px 14px; margin-bottom: 8px;">
+                    <span style="font-size: 1.15rem; font-weight: 700; color: #cbd5e1;">Subtotal Parceiros: <strong style="color: #c084fc; font-family: monospace; font-size: 1.3rem;">R$ {subtotal_parceiros_preview:,.2f}</strong></span>
+                </div>
+            """, unsafe_allow_html=True)
+
         subtotal_parceiros = 0.0
         
         if not itens_parceiro:
@@ -1781,7 +1815,7 @@ with tab_calculo:
                             st.markdown('<div class="item-grid-card-inner parceiro"></div>', unsafe_allow_html=True)
                             c_btn, c_q = st.columns([1.6, 1.1])
                             with c_btn:
-                                btn_txt = f"{item['descricao']}\n\nR$ {float(item['valor']):,.2f}"
+                                btn_txt = f"{item['descricao']} R$ {float(item['valor']):,.2f}"
                                 if st.button(btn_txt, key=f"btn_card_parc_{item['cod_item']}", use_container_width=True, help="Clique para adicionar +1"):
                                     st.session_state[f"parc_{item['cod_item']}"] = int(st.session_state.get(f"parc_{item['cod_item']}", 0)) + 1
                                     st.rerun()
@@ -1795,13 +1829,6 @@ with tab_calculo:
                                     label_visibility="collapsed"
                                 )
                                 subtotal_parceiros += qtd_p * float(item['valor'])
-
-            st.markdown(f"""
-                <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(192,132,252,0.3); border-radius: 12px; margin-top: 10px;">
-                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Subtotal Parceiros: </span>
-                    <strong style="color: #c084fc; font-size: 1.15rem; font-family: monospace;">R$ {subtotal_parceiros:,.2f}</strong>
-                </div>
-            """, unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
     # RESUMO TOTAL GERAL (Exibido se houver Peças ou Parceiros adicionados)
