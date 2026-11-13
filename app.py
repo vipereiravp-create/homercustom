@@ -1423,8 +1423,8 @@ with tab_calculo:
     perc_mecanica_default = float(oficina_cfg.get('margem_mecanica_padrao', 50.0))
     perc_deposito_default = float(oficina_cfg.get('deposito_padrao', 15.0))
     
-    perc_mec_init = float(st.session_state.get('input_margem_mec', perc_mecanica_default)) if is_master else perc_mecanica_default
-    perc_dep_init = float(st.session_state.get('input_perc_dep', perc_deposito_default)) if is_master else perc_deposito_default
+    perc_mec_init = perc_mecanica_default
+    perc_dep_init = perc_deposito_default
 
     total_tunagem_preview = val_base_init + (val_base_init * (perc_mec_init / 100.0))
     val_deposito_preview = total_tunagem_preview * (perc_dep_init / 100.0)
@@ -1471,41 +1471,27 @@ with tab_calculo:
                 key="input_tunagem_base"
             )
             
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                if is_master:
-                    perc_mecanica = st.number_input(
-                        "Margem Mecânica (%)",
-                        min_value=0.0,
-                        value=perc_mecanica_default,
-                        step=5.0,
-                        key="input_margem_mec"
-                    )
-                else:
-                    perc_mecanica = st.number_input(
-                        "Margem Mecânica (%) 🔒",
-                        value=perc_mecanica_default,
-                        disabled=True,
-                        key="input_margem_mec_disabled",
-                        help="Configuração restrita ao usuário Master"
-                    )
-            with col_m2:
-                if is_master:
-                    perc_deposito = st.number_input(
-                        "Depósito (%)",
-                        min_value=0.0,
-                        value=perc_deposito_default,
-                        step=1.0,
-                        key="input_perc_dep"
-                    )
-                else:
-                    perc_deposito = st.number_input(
-                        "Depósito (%) 🔒",
-                        value=perc_deposito_default,
-                        disabled=True,
-                        key="input_perc_dep_disabled",
-                        help="Configuração restrita ao usuário Master"
-                    )
+            perc_mecanica = perc_mecanica_default
+            perc_deposito = perc_deposito_default
+            
+            str_perc_mec = f"{perc_mecanica:,.2f}".replace(".", ",")
+            str_perc_dep = f"{perc_deposito:,.2f}".replace(".", ",")
+            
+            col_info1, col_info2 = st.columns(2)
+            with col_info1:
+                st.markdown(f"""
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 6px;">
+                        <span style="color: {'#1e293b' if is_claro else '#ffffff'}; font-size: 0.92rem; font-weight: 600;">Margem Mecânica (%)</span>
+                        <span style="background: {'#f1f5f9' if is_claro else '#262626'}; border: 1px solid {'#cbd5e1' if is_claro else 'rgba(255,255,255,0.12)'}; color: {'#0f172a' if is_claro else '#f8fafc'}; font-weight: 700; font-size: 0.9rem; padding: 2px 8px; border-radius: 4px;">{str_perc_mec}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col_info2:
+                st.markdown(f"""
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 6px;">
+                        <span style="color: {'#1e293b' if is_claro else '#ffffff'}; font-size: 0.92rem; font-weight: 600;">Depósito (%)</span>
+                        <span style="background: {'#f1f5f9' if is_claro else '#262626'}; border: 1px solid {'#cbd5e1' if is_claro else 'rgba(255,255,255,0.12)'}; color: {'#0f172a' if is_claro else '#f8fafc'}; font-weight: 700; font-size: 0.9rem; padding: 2px 8px; border-radius: 4px;">{str_perc_dep}</span>
+                    </div>
+                """, unsafe_allow_html=True)
 
         with c_right:
             # 3. Painel Salvar Depósito no Supabase (Ao lado do Card Azul e dos Inputs)
