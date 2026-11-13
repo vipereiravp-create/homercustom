@@ -102,126 +102,147 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 1.4rem !important;
+        padding-top: 0.8rem !important;
         padding-bottom: 3.5rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
-        max-width: 720px !important;
+        max-width: 760px !important;
     }
 
-    /* Header Superior Moderno */
+    /* Header Superior Moderno & Compacto */
     .top-header-marker {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
     .user-avatar-3x4 {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #3b82f6;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        border: 2px solid #2563eb;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
         flex-shrink: 0;
     }
 
     .user-avatar-placeholder {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
+        background: #1e3a8a;
         border: 2px solid #3b82f6;
-        color: #60a5fa;
+        color: #93c5fd;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 900;
-        font-size: 1.1rem;
+        font-size: 1rem;
         flex-shrink: 0;
     }
 
     .user-title-large {
-        font-size: 1.35rem !important;
+        font-size: 1.2rem !important;
         font-weight: 900 !important;
         color: #ffffff !important;
-        letter-spacing: -0.02em !important;
+        letter-spacing: -0.01em !important;
         line-height: 1.1 !important;
         white-space: nowrap !important;
     }
 
-    /* Botões Compactos no Topo (Tamanho Ícone) */
-    .icon-btn-container div.stButton > button {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        padding: 0 !important;
-        border-radius: 10px !important;
-        font-size: 1.1rem !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+    /* Botões de Ação Compactos no Topo ([⚙️] e [🚪]) */
+    .icon-btn-container {
+        margin-top: 2px !important;
     }
 
+    .icon-btn-container div.stButton > button,
     .icon-btn-container div[data-testid="stPopover"] > button {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        padding: 0 !important;
-        border-radius: 10px !important;
-        font-size: 1.1rem !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 8px !important;
+        border-radius: 6px !important;
+        font-size: 0.95rem !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #cbd5e1 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        gap: 4px !important;
+        transition: all 0.15s ease !important;
     }
 
-    /* Abas Ultra Modernas, Arredondadas (Pill) e Centralizadas */
+    .icon-btn-container div.stButton > button:hover,
+    .icon-btn-container div[data-testid="stPopover"] > button:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+        color: #ffffff !important;
+    }
+
+    /* ========================================================================= */
+    /* MENU E ABAS ULTRA COMPACTAS (IGUAL AO DESIGN DA IMAGEM)                    */
+    /* ========================================================================= */
     .stTabs [data-baseweb="tab-list"] {
         display: flex !important;
-        gap: 6px !important;
-        background: rgba(15, 23, 42, 0.9) !important;
-        padding: 6px !important;
-        border-radius: 9999px !important;
-        border: 1px solid rgba(51, 65, 85, 0.65) !important;
+        flex-direction: row !important;
+        gap: 4px !important;
+        background: transparent !important;
+        padding: 2px 0 0 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
         overflow-x: auto !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         align-items: center !important;
-        box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
+        box-shadow: none !important;
+        margin-bottom: 6px !important;
     }
 
     .stTabs [data-baseweb="tab"] {
-        flex: 1 1 auto !important;
-        border-radius: 9999px !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        border-radius: 3px !important;
         font-weight: 700 !important;
-        font-size: 0.88rem !important;
-        padding: 9px 16px !important;
-        color: #94a3b8 !important;
-        text-align: center !important;
+        font-size: 0.84rem !important;
+        padding: 5px 12px !important;
+        color: #e2e8f0 !important;
+        text-align: left !important;
         justify-content: center !important;
-        display: flex !important;
+        display: inline-flex !important;
         align-items: center !important;
-        transition: all 0.25s ease-in-out !important;
+        gap: 6px !important;
+        transition: all 0.15s ease !important;
         border: 1px solid transparent !important;
+        border-bottom: 2px solid transparent !important;
+        background: transparent !important;
         white-space: nowrap !important;
     }
 
     .stTabs [data-baseweb="tab"]:hover {
-        color: #f8fafc !important;
-        background: rgba(255, 255, 255, 0.05) !important;
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.06) !important;
     }
 
+    /* Aba Ativa: Fundo Azul Sólido + Faixa Vermelha Inferior */
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        background: #1d4ed8 !important;
         color: #ffffff !important;
         font-weight: 800 !important;
-        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45) !important;
-        border: 1px solid rgba(96, 165, 250, 0.6) !important;
-        transform: scale(1.02) !important;
+        border-radius: 3px !important;
+        border: 1px solid #2563eb !important;
+        border-bottom: 2px solid #ef4444 !important;
+        box-shadow: none !important;
+        transform: none !important;
     }
 
     .stTabs [data-baseweb="tab-highlight"],
     .stTabs [data-baseweb="tab-border"] {
         display: none !important;
+    }
+
+    .stTabs [data-baseweb="tab-panel"] {
+        padding-top: 4px !important;
     }
 
     /* Linhas de Itens: Centralização Vertical e Não-Quebra */
@@ -1176,12 +1197,12 @@ with col_head_right:
         avatar_html = f'<div class="user-avatar-placeholder">{user["nome"][:1].upper()}</div>'
 
     st.markdown(f"""
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 2px;">
             {avatar_html}
             <div style="text-align: right; min-width: 0;">
                 <div class="user-title-large">{user['nome']}</div>
-                <div style="margin-top: 2px;">
-                    <span style="background: rgba({ '245, 158, 11' if is_master else '59, 130, 246' }, 0.2); color: {cargo_badge_color}; border: 1px solid {cargo_badge_color}66; font-size: 0.7rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
+                <div style="margin-top: 1px;">
+                    <span style="background: rgba({ '245, 158, 11' if is_master else '37, 99, 235' }, 0.2); color: {cargo_badge_color}; border: 1px solid {cargo_badge_color}66; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
                         <span>{cargo_icone}</span> {user['cargo'].upper()}
                     </span>
                 </div>
@@ -1189,9 +1210,9 @@ with col_head_right:
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. Botões em tamanho de ícone: [⚙️ Engrenagem] depois [🚪 Sair]
+    # 2. Botões compactos: [⚙️ Engrenagem] depois [🚪 Sair]
     st.markdown('<div class="icon-btn-container">', unsafe_allow_html=True)
-    c_space, c_gear_btn, c_exit_btn = st.columns([2.0, 1.0, 1.0])
+    c_space, c_gear_btn, c_exit_btn = st.columns([2.2, 1.0, 1.0])
     with c_gear_btn:
         with st.popover("⚙️", use_container_width=True):
             st.markdown(f"<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px; color: {'#0f172a' if is_claro else '#ffffff'};'>🎨 Modo Visual</p>", unsafe_allow_html=True)
@@ -1212,8 +1233,6 @@ with col_head_right:
         if st.button("🚪", key="btn_logout_top", use_container_width=True, help="Sair do sistema"):
             logout_user()
     st.markdown('</div>', unsafe_allow_html=True)
-
-st.write("")
 
 # -----------------------------------------------------------------------------
 # NAVEGAÇÃO PRINCIPAL EM ABAS NO TOPO:
