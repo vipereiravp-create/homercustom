@@ -469,99 +469,115 @@ st.markdown("""
     /* ========================================================================= */
     /* CARDS EM GRADE PARA ITENS (REVENDA & PARCEIROS)                           */
     /* ========================================================================= */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner),
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) {
         background-color: #0c1322 !important;
         border: 1px solid rgba(59, 130, 246, 0.28) !important;
         border-radius: 10px !important;
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
         cursor: pointer !important;
         user-select: none !important;
         transition: all 0.15s ease-in-out !important;
         margin-bottom: 6px !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):hover {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner):hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner):hover {
         border-color: #3b82f6 !important;
         background-color: #111c33 !important;
         box-shadow: 0 4px 16px rgba(37, 99, 235, 0.22) !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):active {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner):active,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner):active {
         transform: scale(0.985) !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) > div[data-testid="stVerticalBlock"] {
-        gap: 3px !important;
+    /* O botão ocupa o lado esquerdo do card com texto alinhado à esquerda */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button {
+        background: transparent !important;
+        border: none !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+        flex-direction: column !important;
+        padding: 2px 4px !important;
+        height: auto !important;
+        min-height: 48px !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        cursor: pointer !important;
     }
 
-    .grid-item-name {
-        font-size: 1.0rem !important;
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button:hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button:hover {
+        background: transparent !important;
+    }
+
+    /* Título do item (primeiro parágrafo do botão) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button p:first-of-type,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button p:first-of-type {
+        font-size: 0.98rem !important;
         font-weight: 800 !important;
         color: #ffffff !important;
         letter-spacing: -0.01em !important;
         line-height: 1.25 !important;
+        margin: 0 !important;
+        text-align: left !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        margin-bottom: 2px !important;
+        width: 100% !important;
     }
 
-    .grid-item-price-wrap {
-        display: flex !important;
-        align-items: center !important;
-        height: 32px !important;
-    }
-
-    .grid-item-price-val {
-        font-size: 1.02rem !important;
+    /* Preço do item (segundo parágrafo do botão) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner.revenda) div.stButton > button p:last-of-type,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner.revenda) div.stButton > button p:last-of-type {
+        font-size: 1.05rem !important;
         font-weight: 800 !important;
         font-family: monospace !important;
-        letter-spacing: -0.01em !important;
-    }
-
-    .grid-item-price-val.revenda {
         color: #60a5fa !important;
+        margin: 2px 0 0 0 !important;
+        text-align: left !important;
     }
 
-    .grid-item-price-val.parceiro {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner.parceiro) div.stButton > button p:last-of-type,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner.parceiro) div.stButton > button p:last-of-type {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        font-family: monospace !important;
         color: #c084fc !important;
+        margin: 2px 0 0 0 !important;
+        text-align: left !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-testid="stNumberInput"] {
+    /* Caixa de Input Numérico */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div[data-testid="stNumberInput"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div[data-testid="stNumberInput"] {
         width: 100% !important;
         margin: 0 !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-baseweb="input"] {
-        height: 32px !important;
-        min-height: 32px !important;
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div[data-baseweb="input"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div[data-baseweb="input"] {
+        height: 34px !important;
+        min-height: 34px !important;
         border-radius: 6px !important;
         background-color: #1e293b !important;
         border: 1px solid rgba(255, 255, 255, 0.18) !important;
         box-shadow: none !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[type="number"],
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[data-testid="stNumberInput-Input"] {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) input[type="number"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) input[type="number"] {
         text-align: center !important;
-        font-size: 0.95rem !important;
+        font-size: 0.98rem !important;
         font-weight: 800 !important;
         font-family: monospace !important;
         color: #ffffff !important;
         padding: 0 4px !important;
         cursor: text !important;
-    }
-
-    /* Oculta os botões +/- do input preservando-os no DOM para acionamento via clique no card */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) button[data-testid="stNumberInputStepDown"],
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) button[data-testid="stNumberInputStepUp"] {
-        opacity: 0 !important;
-        width: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        position: absolute !important;
-        pointer-events: none !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-testid="stNumberInput"] {
@@ -1064,23 +1080,28 @@ st.markdown("""
     }
 
     /* Cards em Grade no Modo Claro */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner),
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
     }
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):hover {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner):hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner):hover {
         border-color: #2563eb !important;
         background-color: #f8fafc !important;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12) !important;
     }
-    .grid-item-name {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div.stButton > button p:first-of-type,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div.stButton > button p:first-of-type {
         color: #0f172a !important;
     }
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-baseweb="input"] {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) div[data-baseweb="input"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) div[data-baseweb="input"] {
         background-color: #f1f5f9 !important;
         border: 1px solid #cbd5e1 !important;
     }
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[type="number"] {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.item-grid-card-inner) input[type="number"],
+    div[data-testid="stVerticalBlock"]:has(> div > div > .item-grid-card-inner) input[type="number"] {
         color: #0f172a !important;
     }
 
@@ -1241,41 +1262,18 @@ def injetar_recursos_client():
 
             // 2b. CLIQUE NO BLOCO DA GRADE INCREMENTA +1 NA QUANTIDADE (OU DIGITAÇÃO DIRETA NO INPUT)
             function aplicarGridItemCardClicks() {{
-                const markers = pDoc.querySelectorAll('.grid-item-marker');
-                markers.forEach(marker => {{
-                    const card = marker.closest('[data-testid="stVerticalBlockBorderWrapper"]');
-                    if (!card || card._hcGridClickBound) return;
-                    card._hcGridClickBound = true;
+                const inners = pDoc.querySelectorAll('.item-grid-card-inner');
+                inners.forEach(inner => {{
+                    const card = inner.closest('[data-testid="stVerticalBlockBorderWrapper"]') || inner.closest('[data-testid="column"]');
+                    if (!card || card._hcCardClickBound) return;
+                    card._hcCardClickBound = true;
 
                     card.addEventListener('click', function(e) {{
-                        // Se o clique foi diretamente dentro do input, permite digitação livre sem incremento
-                        if (e.target.tagName === 'INPUT' || e.target.closest('input')) {{
-                            return;
+                        if (e.target.tagName === 'INPUT' || e.target.closest('input')) return;
+                        const btn = card.querySelector('button');
+                        if (btn && e.target !== btn && !btn.contains(e.target)) {{
+                            btn.click();
                         }}
-
-                        // 1. Tenta acionar o botão de incremento nativo do Streamlit preservado no DOM
-                        const stepUpBtn = card.querySelector('button[data-testid="stNumberInputStepUp"]');
-                        if (stepUpBtn) {{
-                            stepUpBtn.click();
-                            return;
-                        }}
-
-                        // 2. Fallback caso o botão não esteja acessível: atualiza via React setter
-                        const input = card.querySelector('input[type="number"], input[data-testid="stNumberInput-Input"]');
-                        if (!input) return;
-
-                        let raw = (input.value || '').trim().replace(',', '.');
-                        let currentVal = parseInt(raw, 10);
-                        if (isNaN(currentVal) || currentVal < 0) currentVal = 0;
-                        let nextVal = currentVal + 1;
-
-                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeSetter.call(input, nextVal);
-
-                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                        input.blur();
                     }});
                 }});
             }}
@@ -1739,18 +1737,13 @@ with tab_calculo:
                 for idx_item, item in enumerate(lote):
                     with cols[idx_item]:
                         with st.container(border=True):
-                            st.markdown(f"""
-                                <div class="grid-item-marker" data-card-key="rev_{item['cod_item']}">
-                                    <div class="grid-item-name" title="{item['descricao']}">{item['descricao']}</div>
-                                </div>
-                            """, unsafe_allow_html=True)
-                            c_p, c_q = st.columns([1.5, 1.0])
-                            with c_p:
-                                st.markdown(f"""
-                                    <div class="grid-item-price-wrap">
-                                        <span class="grid-item-price-val revenda">R$ {float(item['valor']):,.2f}</span>
-                                    </div>
-                                """, unsafe_allow_html=True)
+                            st.markdown('<div class="item-grid-card-inner revenda"></div>', unsafe_allow_html=True)
+                            c_btn, c_q = st.columns([1.6, 1.1])
+                            with c_btn:
+                                btn_txt = f"{item['descricao']}\n\nR$ {float(item['valor']):,.2f}"
+                                if st.button(btn_txt, key=f"btn_card_rev_{item['cod_item']}", use_container_width=True, help="Clique para adicionar +1"):
+                                    st.session_state[f"rev_{item['cod_item']}"] = int(st.session_state.get(f"rev_{item['cod_item']}", 0)) + 1
+                                    st.rerun()
                             with c_q:
                                 qtd = st.number_input(
                                     "Qtd",
@@ -1785,18 +1778,13 @@ with tab_calculo:
                 for idx_item, item in enumerate(lote):
                     with cols[idx_item]:
                         with st.container(border=True):
-                            st.markdown(f"""
-                                <div class="grid-item-marker" data-card-key="parc_{item['cod_item']}">
-                                    <div class="grid-item-name" title="{item['descricao']}">{item['descricao']}</div>
-                                </div>
-                            """, unsafe_allow_html=True)
-                            c_p, c_q = st.columns([1.5, 1.0])
-                            with c_p:
-                                st.markdown(f"""
-                                    <div class="grid-item-price-wrap">
-                                        <span class="grid-item-price-val parceiro">R$ {float(item['valor']):,.2f}</span>
-                                    </div>
-                                """, unsafe_allow_html=True)
+                            st.markdown('<div class="item-grid-card-inner parceiro"></div>', unsafe_allow_html=True)
+                            c_btn, c_q = st.columns([1.6, 1.1])
+                            with c_btn:
+                                btn_txt = f"{item['descricao']}\n\nR$ {float(item['valor']):,.2f}"
+                                if st.button(btn_txt, key=f"btn_card_parc_{item['cod_item']}", use_container_width=True, help="Clique para adicionar +1"):
+                                    st.session_state[f"parc_{item['cod_item']}"] = int(st.session_state.get(f"parc_{item['cod_item']}", 0)) + 1
+                                    st.rerun()
                             with c_q:
                                 qtd_p = st.number_input(
                                     "Qtd",
