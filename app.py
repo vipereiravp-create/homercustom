@@ -2,7 +2,11 @@ import os
 import re
 import json
 import base64
+import time
+import hmac
+import hashlib
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import create_client, Client
 import pandas as pd
 
@@ -857,12 +861,176 @@ except Exception as e:
     supabase = None
 
 # -----------------------------------------------------------------------------
-# GERENCIAMENTO DE SESSÃO E LOGIN
+# PERSISTÊNCIA DE SESSÃO & SEGURANÇA CONTRA INATIVIDADE (30 DIAS)
+# -----------------------------------------------------------------------------
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "homer_custom_secret_key_session_2026_oficina")
+
+def gerar_token_sessao(user_dict: dict) -> str:
+    """Gera um token criptográfico assinado com HMAC-SHA256 válido por 30 dias."""
+    try:
+        dados = {
+            'login': user_dict.get('login'),
+            'nome': user_dict.get('nome'),
+            'cargo': user_dict.get('cargo'),
+            'cod_usuario': user_dict.get('cod_usuario') or user_dict.get('id'),
+            'exp': int(time.time()) + (30 * 24 * 3600)  # 30 dias de validade
+        }
+        json_str = json.dumps(dados, separators=(',', ':'))
+        b64_dados = base64.urlsafe_b64encode(json_str.encode()).decode()
+        sig = hmac.new(SESSION_SECRET.encode(), b64_dados.encode(), hashlib.sha256).hexdigest()
+        return f"{b64_dados}.{sig}"
+    except Exception:
+        return ""
+
+def validar_token_sessao(token: str) -> dict | None:
+    """Valida a integridade do token assinado e o prazo de expiração."""
+    if not token or '.' not in token:
+        return None
+    try:
+        b64_dados, sig = token.split('.', 1)
+        expected_sig = hmac.new(SESSION_SECRET.encode(), b64_dados.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return None
+        json_str = base64.urlsafe_b64decode(b64_dados.encode()).decode()
+        dados = json.loads(json_str)
+        if time.time() > dados.get('exp', 0):
+            return None
+        return dados
+    except Exception:
+        return None
+
+# -----------------------------------------------------------------------------
+# INJEÇÃO CLIENT-SIDE: AUTO-CLEAR DE CAMPOS ZERADOS & HEARTBEAT ANTI-DESCONEXÃO
+# -----------------------------------------------------------------------------
+def injetar_recursos_client():
+    limpar_js = "true" if st.session_state.get('limpar_localstorage') else "false"
+    if st.session_state.get('limpar_localstorage'):
+        st.session_state['limpar_localstorage'] = False
+
+    js_code = f"""
+    <script>
+    (function() {{
+        try {{
+            const pWin = window.parent;
+            const pDoc = pWin.document;
+
+            // 1. SINCRONIZAÇÃO DE TOKEN ENTRE LOCALSTORAGE E QUERY PARAMS (PERSISTÊNCIA TOTAL)
+            if ({limpar_js}) {{
+                pWin.localStorage.removeItem('hc_session_token');
+            }} else {{
+                const urlParams = new URLSearchParams(pWin.location.search);
+                const tokenUrl = urlParams.get('session');
+                if (tokenUrl) {{
+                    pWin.localStorage.setItem('hc_session_token', tokenUrl);
+                }} else {{
+                    const tokenStorage = pWin.localStorage.getItem('hc_session_token');
+                    if (tokenStorage && !urlParams.has('session')) {{
+                        urlParams.set('session', tokenStorage);
+                        pWin.history.replaceState(null, '', '?' + urlParams.toString());
+                        pWin.location.search = urlParams.toString();
+                    }}
+                }}
+            }}
+
+            // 2. AUTO-CLEAR: QUANDO O USUÁRIO CLICA/FOCA EM CAMPO COM VALOR 0, ELE SE APAGA AUTOMATICAMENTE
+            function aplicarAutoClearEmZeros() {{
+                const inputs = pDoc.querySelectorAll('input[type="number"], input[data-testid="stNumberInput-Input"]');
+                inputs.forEach(input => {{
+                    if (input._hcAutoClearBound) return;
+                    input._hcAutoClearBound = true;
+
+                    const limparSeZero = function(e) {{
+                        const raw = (this.value || '').trim().replace(',', '.');
+                        if (raw === '0' || raw === '0.0' || raw === '0.00' || parseFloat(raw) === 0) {{
+                            this.value = '';
+                            this.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        }} else {{
+                            this.select();
+                        }}
+                    }};
+
+                    input.addEventListener('focus', limparSeZero);
+                    input.addEventListener('click', limparSeZero);
+
+                    input.addEventListener('blur', function() {{
+                        if ((this.value || '').trim() === '') {{
+                            this.value = '0';
+                            this.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            this.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        }}
+                    }});
+                }});
+            }}
+
+            aplicarAutoClearEmZeros();
+
+            if (!pWin._hcObserverBound) {{
+                pWin._hcObserverBound = true;
+                const obs = new MutationObserver(() => aplicarAutoClearEmZeros());
+                obs.observe(pDoc.body, {{ childList: true, subtree: true }});
+            }}
+
+            // 3. HEARTBEAT / ANTI-DESCONEXÃO PROLONGADA (KEEP-ALIVE NO RENDER E WEBSOCKET)
+            if (!pWin._hcHeartbeatBound) {{
+                pWin._hcHeartbeatBound = true;
+
+                // Ping periódico a cada 20 segundos para manter o Render e WebSocket sempre ativos
+                setInterval(() => {{
+                    try {{
+                        fetch(pWin.location.href, {{ method: 'HEAD', cache: 'no-store' }}).catch(() => {{}});
+                    }} catch(e) {{}}
+                }}, 20000);
+
+                // Quando o usuário volta à aba após muito tempo inativo (evita obrigar a recarregar tudo)
+                pDoc.addEventListener('visibilitychange', () => {{
+                    if (pDoc.visibilityState === 'visible') {{
+                        try {{
+                            fetch(pWin.location.href, {{ method: 'HEAD', cache: 'no-store' }}).catch(() => {{}});
+
+                            // Se houver modal de desconexão bloqueando a tela, reconecta de forma suave
+                            const dialog = pDoc.querySelector('[data-testid="stDialog"], [data-baseweb="modal"]');
+                            if (dialog && (dialog.textContent.toLowerCase().includes('connection') || dialog.textContent.toLowerCase().includes('reconnect'))) {{
+                                const btn = dialog.querySelector('button');
+                                if (btn) btn.click();
+                            }}
+                        }} catch(e) {{}}
+                    }}
+                }});
+            }}
+        }} catch(err) {{
+            console.warn("HomerCustom client script:", err);
+        }}
+    }})();
+    </script>
+    """
+    components.html(js_code, height=0, width=0)
+
+injetar_recursos_client()
+
+# -----------------------------------------------------------------------------
+# GERENCIAMENTO DE SESSÃO E LOGIN COM AUTO-LOGIN CONTÍNUO
 # -----------------------------------------------------------------------------
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user_data' not in st.session_state:
     st.session_state['user_data'] = None
+
+# Recuperação automática de sessão: se não estiver logado na memória, checa o token da URL/armazenamento
+if not st.session_state['logged_in']:
+    token_recuperado = st.query_params.get("session")
+    if token_recuperado:
+        user_sessao = validar_token_sessao(token_recuperado)
+        if user_sessao:
+            # Busca dados atualizados no banco (foto, cargo recente, etc.)
+            if supabase:
+                try:
+                    res_refresh = supabase.table('usuarios').select('*').ilike('login', user_sessao['login']).execute()
+                    if res_refresh.data and len(res_refresh.data) > 0:
+                        user_sessao = res_refresh.data[0]
+                except Exception:
+                    pass
+            st.session_state['logged_in'] = True
+            st.session_state['user_data'] = user_sessao
 
 def login_user(login, senha):
     if not supabase:
@@ -885,6 +1053,11 @@ def login_user(login, senha):
                 break
                 
         if user_match:
+            # Gera token persistente de sessão (30 dias) e salva nos query_params para nunca deslogar por inatividade
+            token_salvar = gerar_token_sessao(user_match)
+            if token_salvar:
+                st.query_params["session"] = token_salvar
+
             st.session_state['logged_in'] = True
             st.session_state['user_data'] = user_match
             st.session_state['show_welcome'] = True
@@ -898,6 +1071,9 @@ def logout_user():
     st.session_state['logged_in'] = False
     st.session_state['user_data'] = None
     st.session_state['show_welcome'] = False
+    if 'session' in st.query_params:
+        del st.query_params['session']
+    st.session_state['limpar_localstorage'] = True
     st.rerun()
 
 # -----------------------------------------------------------------------------

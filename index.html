@@ -269,7 +269,48 @@
 
         fetchSupabaseData();
         const timer = setInterval(fetchSupabaseData, 8000);
-        return () => clearInterval(timer);
+
+        // AUTO-CLEAR: Ao focar/clicar em campo que esteja demonstrando 0, ele se apaga automaticamente
+        const handleGlobalAutoClearFocus = (e) => {
+          if (e.target && e.target.type === 'number') {
+            const raw = String(e.target.value || '').trim().replace(',', '.');
+            if (raw === '0' || raw === '0.0' || raw === '0.00' || parseFloat(raw) === 0) {
+              e.target.value = '';
+              e.target.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+              e.target.select();
+            }
+          }
+        };
+
+        const handleGlobalAutoClearBlur = (e) => {
+          if (e.target && e.target.type === 'number') {
+            if (String(e.target.value || '').trim() === '') {
+              e.target.value = '0';
+              e.target.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        };
+
+        document.addEventListener('focusin', handleGlobalAutoClearFocus);
+        document.addEventListener('focusout', handleGlobalAutoClearBlur);
+
+        // Re-sincronização automática silenciosa ao voltar à aba após inatividade (sem recarregar página inteira)
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible') {
+            fetchSupabaseData();
+          }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
+
+        return () => {
+          clearInterval(timer);
+          document.removeEventListener('focusin', handleGlobalAutoClearFocus);
+          document.removeEventListener('focusout', handleGlobalAutoClearBlur);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('focus', handleVisibilityChange);
+        };
       }, []);
 
       const pushToSupabase = async (payloadOverride = {}) => {
@@ -720,9 +761,9 @@
                               type="number"
                               min="0"
                               max="9999"
-                              value={qtdRevenda[item.id] || ''}
+                              value={qtdRevenda[item.id] !== undefined ? qtdRevenda[item.id] : 0}
                               placeholder="0"
-                              onChange={(e) => setQtdRevenda({ ...qtdRevenda, [item.id]: Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
+                              onChange={(e) => setQtdRevenda({ ...qtdRevenda, [item.id]: e.target.value === '' ? '' : Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
                               className="w-20 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-center font-mono font-extrabold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner shrink-0"
                             />
                           </div>
@@ -747,9 +788,9 @@
                               type="number"
                               min="0"
                               max="9999"
-                              value={qtdParceiros[item.id] || ''}
+                              value={qtdParceiros[item.id] !== undefined ? qtdParceiros[item.id] : 0}
                               placeholder="0"
-                              onChange={(e) => setQtdParceiros({ ...qtdParceiros, [item.id]: Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
+                              onChange={(e) => setQtdParceiros({ ...qtdParceiros, [item.id]: e.target.value === '' ? '' : Math.min(9999, Math.max(0, parseInt(e.target.value) || 0)) })}
                               className="w-20 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-center font-mono font-extrabold text-white text-base focus:outline-none focus:border-blue-500 shadow-inner shrink-0"
                             />
                           </div>
@@ -766,8 +807,8 @@
                         <input
                           type="number"
                           min="0"
-                          value={valorBaseTunagem || ''}
-                          onChange={(e) => setValorBaseTunagem(e.target.value)}
+                          value={valorBaseTunagem !== undefined && valorBaseTunagem !== '' ? valorBaseTunagem : 0}
+                          onChange={(e) => setValorBaseTunagem(e.target.value === '' ? '' : e.target.value)}
                           placeholder="0,00"
                           className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 font-mono font-bold text-emerald-400 text-lg"
                         />
