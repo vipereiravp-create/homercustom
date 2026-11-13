@@ -466,6 +466,104 @@ st.markdown("""
     .item-price-tag.revenda { color: #60a5fa !important; }
     .item-price-tag.parceiro { color: #c084fc !important; }
 
+    /* ========================================================================= */
+    /* CARDS EM GRADE PARA ITENS (REVENDA & PARCEIROS)                           */
+    /* ========================================================================= */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) {
+        background-color: #0c1322 !important;
+        border: 1px solid rgba(59, 130, 246, 0.28) !important;
+        border-radius: 10px !important;
+        padding: 10px 12px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        transition: all 0.15s ease-in-out !important;
+        margin-bottom: 6px !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):hover {
+        border-color: #3b82f6 !important;
+        background-color: #111c33 !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):active {
+        transform: scale(0.985) !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) > div[data-testid="stVerticalBlock"] {
+        gap: 3px !important;
+    }
+
+    .grid-item-name {
+        font-size: 1.0rem !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1.25 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-bottom: 2px !important;
+    }
+
+    .grid-item-price-wrap {
+        display: flex !important;
+        align-items: center !important;
+        height: 32px !important;
+    }
+
+    .grid-item-price-val {
+        font-size: 1.02rem !important;
+        font-weight: 800 !important;
+        font-family: monospace !important;
+        letter-spacing: -0.01em !important;
+    }
+
+    .grid-item-price-val.revenda {
+        color: #60a5fa !important;
+    }
+
+    .grid-item-price-val.parceiro {
+        color: #c084fc !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-testid="stNumberInput"] {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-baseweb="input"] {
+        height: 32px !important;
+        min-height: 32px !important;
+        border-radius: 6px !important;
+        background-color: #1e293b !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        box-shadow: none !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[type="number"],
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[data-testid="stNumberInput-Input"] {
+        text-align: center !important;
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        font-family: monospace !important;
+        color: #ffffff !important;
+        padding: 0 4px !important;
+        cursor: text !important;
+    }
+
+    /* Oculta os botões +/- do input preservando-os no DOM para acionamento via clique no card */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) button[data-testid="stNumberInputStepDown"],
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) button[data-testid="stNumberInputStepUp"] {
+        opacity: 0 !important;
+        width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        position: absolute !important;
+        pointer-events: none !important;
+    }
+
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) div[data-testid="stNumberInput"] {
         width: 100% !important;
         max-width: 110px !important;
@@ -965,6 +1063,27 @@ st.markdown("""
         border: 1px solid #cbd5e1 !important;
     }
 
+    /* Cards em Grade no Modo Claro */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker):hover {
+        border-color: #2563eb !important;
+        background-color: #f8fafc !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+    }
+    .grid-item-name {
+        color: #0f172a !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) div[data-baseweb="input"] {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.grid-item-marker) input[type="number"] {
+        color: #0f172a !important;
+    }
+
     div[data-baseweb="input"] input {
         color: #0f172a !important;
         background-color: #ffffff !important;
@@ -1120,9 +1239,55 @@ def injetar_recursos_client():
 
             aplicarAutoClearEmZeros();
 
+            // 2b. CLIQUE NO BLOCO DA GRADE INCREMENTA +1 NA QUANTIDADE (OU DIGITAÇÃO DIRETA NO INPUT)
+            function aplicarGridItemCardClicks() {{
+                const markers = pDoc.querySelectorAll('.grid-item-marker');
+                markers.forEach(marker => {{
+                    const card = marker.closest('[data-testid="stVerticalBlockBorderWrapper"]');
+                    if (!card || card._hcGridClickBound) return;
+                    card._hcGridClickBound = true;
+
+                    card.addEventListener('click', function(e) {{
+                        // Se o clique foi diretamente dentro do input, permite digitação livre sem incremento
+                        if (e.target.tagName === 'INPUT' || e.target.closest('input')) {{
+                            return;
+                        }}
+
+                        // 1. Tenta acionar o botão de incremento nativo do Streamlit preservado no DOM
+                        const stepUpBtn = card.querySelector('button[data-testid="stNumberInputStepUp"]');
+                        if (stepUpBtn) {{
+                            stepUpBtn.click();
+                            return;
+                        }}
+
+                        // 2. Fallback caso o botão não esteja acessível: atualiza via React setter
+                        const input = card.querySelector('input[type="number"], input[data-testid="stNumberInput-Input"]');
+                        if (!input) return;
+
+                        let raw = (input.value || '').trim().replace(',', '.');
+                        let currentVal = parseInt(raw, 10);
+                        if (isNaN(currentVal) || currentVal < 0) currentVal = 0;
+                        let nextVal = currentVal + 1;
+
+                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                        nativeSetter.call(input, nextVal);
+
+                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                        input.blur();
+                    }});
+                }});
+            }}
+
+            aplicarGridItemCardClicks();
+
             if (!pWin._hcObserverBound) {{
                 pWin._hcObserverBound = true;
-                const obs = new MutationObserver(() => aplicarAutoClearEmZeros());
+                const obs = new MutationObserver(() => {{
+                    aplicarAutoClearEmZeros();
+                    aplicarGridItemCardClicks();
+                }});
                 obs.observe(pDoc.body, {{ childList: true, subtree: true }});
             }}
 
@@ -1566,26 +1731,36 @@ with tab_calculo:
         if not itens_revenda:
             st.info("Nenhuma peça cadastrada na categoria revenda.")
         else:
-            for item in itens_revenda:
-                c1, c2 = st.columns([3.5, 1.2])
-                with c1:
-                    st.markdown(f"""
-                        <div class="item-card-marker">
-                            <span class="item-title-large">{item['descricao']}</span>
-                            <span class="item-sep">-</span>
-                            <span class="item-price-tag revenda">R$ {float(item['valor']):,.2f}</span>
-                        </div>
-                    """, unsafe_allow_html=True)
-                with c2:
-                    qtd = st.number_input(
-                        "Qtd",
-                        min_value=0,
-                        max_value=9999,
-                        step=1,
-                        key=f"rev_{item['cod_item']}",
-                        label_visibility="collapsed"
-                    )
-                    subtotal_revenda += qtd * float(item['valor'])
+            # Grade de Itens (2 Colunas por linha)
+            for i in range(0, len(itens_revenda), 2):
+                col1, col2 = st.columns(2)
+                lote = itens_revenda[i:i+2]
+                cols = [col1, col2]
+                for idx_item, item in enumerate(lote):
+                    with cols[idx_item]:
+                        with st.container(border=True):
+                            st.markdown(f"""
+                                <div class="grid-item-marker" data-card-key="rev_{item['cod_item']}">
+                                    <div class="grid-item-name" title="{item['descricao']}">{item['descricao']}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            c_p, c_q = st.columns([1.5, 1.0])
+                            with c_p:
+                                st.markdown(f"""
+                                    <div class="grid-item-price-wrap">
+                                        <span class="grid-item-price-val revenda">R$ {float(item['valor']):,.2f}</span>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            with c_q:
+                                qtd = st.number_input(
+                                    "Qtd",
+                                    min_value=0,
+                                    max_value=9999,
+                                    step=1,
+                                    key=f"rev_{item['cod_item']}",
+                                    label_visibility="collapsed"
+                                )
+                                subtotal_revenda += qtd * float(item['valor'])
             
             st.markdown(f"""
                 <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; margin-top: 10px;">
@@ -1602,26 +1777,36 @@ with tab_calculo:
         if not itens_parceiro:
             st.info("Nenhum item de parceiro cadastrado.")
         else:
-            for item in itens_parceiro:
-                c1, c2 = st.columns([3.5, 1.2])
-                with c1:
-                    st.markdown(f"""
-                        <div class="item-card-marker">
-                            <span class="item-title-large">{item['descricao']}</span>
-                            <span class="item-sep">-</span>
-                            <span class="item-price-tag parceiro">R$ {float(item['valor']):,.2f}</span>
-                        </div>
-                    """, unsafe_allow_html=True)
-                with c2:
-                    qtd_p = st.number_input(
-                        "Qtd",
-                        min_value=0,
-                        max_value=9999,
-                        step=1,
-                        key=f"parc_{item['cod_item']}",
-                        label_visibility="collapsed"
-                    )
-                    subtotal_parceiros += qtd_p * float(item['valor'])
+            # Grade de Itens (2 Colunas por linha)
+            for i in range(0, len(itens_parceiro), 2):
+                col1, col2 = st.columns(2)
+                lote = itens_parceiro[i:i+2]
+                cols = [col1, col2]
+                for idx_item, item in enumerate(lote):
+                    with cols[idx_item]:
+                        with st.container(border=True):
+                            st.markdown(f"""
+                                <div class="grid-item-marker" data-card-key="parc_{item['cod_item']}">
+                                    <div class="grid-item-name" title="{item['descricao']}">{item['descricao']}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            c_p, c_q = st.columns([1.5, 1.0])
+                            with c_p:
+                                st.markdown(f"""
+                                    <div class="grid-item-price-wrap">
+                                        <span class="grid-item-price-val parceiro">R$ {float(item['valor']):,.2f}</span>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            with c_q:
+                                qtd_p = st.number_input(
+                                    "Qtd",
+                                    min_value=0,
+                                    max_value=9999,
+                                    step=1,
+                                    key=f"parc_{item['cod_item']}",
+                                    label_visibility="collapsed"
+                                )
+                                subtotal_parceiros += qtd_p * float(item['valor'])
 
             st.markdown(f"""
                 <div class="subtotal-summary-card" style="text-align: right; padding: 12px 14px; background: rgba(15,23,42,0.8); border: 1px solid rgba(192,132,252,0.3); border-radius: 12px; margin-top: 10px;">
