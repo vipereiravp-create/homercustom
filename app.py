@@ -251,16 +251,16 @@ st.markdown("""
     .total-banner-compact {
         background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 55%, #0f172a 100%) !important;
         border: 1px solid rgba(59, 130, 246, 0.55) !important;
-        border-radius: 14px !important;
-        padding: 18px 14px !important;
+        border-radius: 12px !important;
+        padding: 14px 12px !important;
         text-align: center !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
-        min-height: 200px !important;
+        min-height: 145px !important;
         box-shadow: 0 8px 24px rgba(30, 58, 138, 0.35) !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 4px !important;
     }
 
     .total-title-compact {
@@ -1419,10 +1419,11 @@ with tab_calculo:
 
     # --- SUB-ABA: TUNAGEM & SERVIÇO ---
     with sub_tunagem:
-        # 1. LINHA SUPERIOR COMPACTA: BANNER AZUL (ESQUERDA) + SALVAR DEPÓSITO (DIREITA)
-        c_top_banner, c_top_salvar = st.columns([1.5, 1.0])
+        # DUAS COLUNAS PRINCIPAIS: ESQUERDA (BANNER + CAMPOS DE CÁLCULO) | DIREITA (SALVAR DEPÓSITO)
+        c_left, c_right = st.columns([1.52, 1.0])
         
-        with c_top_banner:
+        with c_left:
+            # 1. Card Azul (Valor Final para o Cliente)
             st.markdown(f"""
                 <div class="total-banner-compact">
                     <div class="total-title-compact">VALOR FINAL PARA O CLIENTE</div>
@@ -1436,11 +1437,59 @@ with tab_calculo:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+
+            # 2. Seção de Cálculo de Tunagem
+            st.markdown("<h4 style='margin-top: 10px; margin-bottom: 2px; font-weight: 800; font-size: 1.1rem; color: #ffffff;'>⚙️ Cálculo de Tunagem</h4>", unsafe_allow_html=True)
             
-        with c_top_salvar:
+            val_base_tunagem = st.number_input(
+                "Valor Base da Tunagem (R$)",
+                min_value=0.0,
+                step=50.0,
+                format="%.2f",
+                key="input_tunagem_base"
+            )
+            
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                if is_master:
+                    perc_mecanica = st.number_input(
+                        "Margem Mecânica (%)",
+                        min_value=0.0,
+                        value=perc_mecanica_default,
+                        step=5.0,
+                        key="input_margem_mec"
+                    )
+                else:
+                    perc_mecanica = st.number_input(
+                        "Margem Mecânica (%) 🔒",
+                        value=perc_mecanica_default,
+                        disabled=True,
+                        key="input_margem_mec_disabled",
+                        help="Configuração restrita ao usuário Master"
+                    )
+            with col_m2:
+                if is_master:
+                    perc_deposito = st.number_input(
+                        "Depósito (%)",
+                        min_value=0.0,
+                        value=perc_deposito_default,
+                        step=1.0,
+                        key="input_perc_dep"
+                    )
+                else:
+                    perc_deposito = st.number_input(
+                        "Depósito (%) 🔒",
+                        value=perc_deposito_default,
+                        disabled=True,
+                        key="input_perc_dep_disabled",
+                        help="Configuração restrita ao usuário Master"
+                    )
+
+        with c_right:
+            # 3. Painel Salvar Depósito no Supabase (Ao lado do Card Azul e dos Inputs)
             with st.expander("📝 Salvar Depósito no Supabase", expanded=True):
                 st.markdown(f"""
-                    <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); border-radius: 6px; padding: 5px 8px; text-align: center; margin-bottom: 6px;">
+                    <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.35); border-radius: 6px; padding: 6px 8px; text-align: center; margin-bottom: 8px;">
                         <span style="color: #fbbf24; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
                             DEPÓSITO REQUERIDO: R$ {val_deposito_preview:,.2f}
                         </span>
@@ -1479,72 +1528,23 @@ with tab_calculo:
                             except Exception as e:
                                 st.error(f"Erro ao salvar: {e}")
 
-        # 2. SEÇÃO DE CÁLCULO DE TUNAGEM (COMPACTA)
-        st.markdown("<h4 style='margin-top: 10px; margin-bottom: 4px; font-weight: 800; font-size: 1.15rem; color: #ffffff;'>⚙️ Cálculo de Tunagem</h4>", unsafe_allow_html=True)
-        
-        val_base_tunagem = st.number_input(
-            "Valor Base da Tunagem (R$)",
-            min_value=0.0,
-            step=50.0,
-            format="%.2f",
-            key="input_tunagem_base"
-        )
-        
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            if is_master:
-                perc_mecanica = st.number_input(
-                    "Margem Mecânica (%)",
-                    min_value=0.0,
-                    value=perc_mecanica_default,
-                    step=5.0,
-                    key="input_margem_mec"
-                )
-            else:
-                perc_mecanica = st.number_input(
-                    "Margem Mecânica (%) 🔒",
-                    value=perc_mecanica_default,
-                    disabled=True,
-                    key="input_margem_mec_disabled",
-                    help="Configuração restrita ao usuário Master"
-                )
-        with col_m2:
-            if is_master:
-                perc_deposito = st.number_input(
-                    "Depósito (%)",
-                    min_value=0.0,
-                    value=perc_deposito_default,
-                    step=1.0,
-                    key="input_perc_dep"
-                )
-            else:
-                perc_deposito = st.number_input(
-                    "Depósito (%) 🔒",
-                    value=perc_deposito_default,
-                    disabled=True,
-                    key="input_perc_dep_disabled",
-                    help="Configuração restrita ao usuário Master"
-                )
-
-        if not is_master:
-            st.caption("🔒 *As porcentagens são fixadas pelo Chefe da Oficina (Master) nas configurações.*")
-
+        # Recalcula com valores finais
         total_tunagem = val_base_tunagem + (val_base_tunagem * (perc_mecanica / 100.0))
         val_deposito = total_tunagem * (perc_deposito / 100.0)
 
-        # 3. CARD DE RESULTADOS DA TUNAGEM
+        # 4. CARD DE RESULTADOS DA TUNAGEM (LARGURA TOTAL NA PARTE INFERIOR)
         st.markdown(f"""
-            <div class="metric-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 14px; padding: 14px 18px; margin-top: 10px; margin-bottom: 6px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="color: #94a3b8; font-size: 0.86rem; font-weight: 600;">Margem Mecânica ({perc_mecanica:.0f}%):</span>
-                    <span style="font-weight: 700; font-family: monospace; color: #f8fafc; font-size: 0.95rem;">+ R$ {(val_base_tunagem * (perc_mecanica / 100.0)):,.2f}</span>
+            <div class="metric-card" style="background: rgba(12, 19, 34, 0.95); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 14px 20px; margin-top: 10px; margin-bottom: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #94a3b8; font-size: 0.88rem; font-weight: 600;">Margem Mecânica ({perc_mecanica:.0f}%):</span>
+                    <span style="font-weight: 700; font-family: monospace; color: #f8fafc; font-size: 0.98rem;">+ R$ {(val_base_tunagem * (perc_mecanica / 100.0)):,.2f}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(51, 65, 85, 0.5);">
-                    <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem;">Total da Tunagem:</span>
+                    <span style="color: #ffffff; font-weight: 800; font-size: 0.96rem;">Total da Tunagem:</span>
                     <span style="color: #4ade80; font-weight: 900; font-size: 1.25rem; font-family: monospace;">R$ {total_tunagem:,.2f}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(245, 158, 11, 0.45);">
-                    <span style="color: #f59e0b; font-weight: 800; font-size: 0.95rem;">Depósito Requerido ({perc_deposito:.0f}%):</span>
+                    <span style="color: #f59e0b; font-weight: 800; font-size: 0.96rem;">Depósito Requerido ({perc_deposito:.0f}%):</span>
                     <span style="color: #fbbf24; font-weight: 900; font-size: 1.25rem; font-family: monospace;">R$ {val_deposito:,.2f}</span>
                 </div>
             </div>
