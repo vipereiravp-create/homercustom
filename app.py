@@ -1396,9 +1396,91 @@ with tab_calculo:
         f"🤝 Itens Parceiros ({len(itens_parceiro)})"
     ])
 
+    # Pré-cálculo de valores para o Banner e Depósito em tempo real
+    val_base_init = float(st.session_state.get('input_tunagem_base', 0.0))
+    perc_mecanica_default = float(oficina_cfg.get('margem_mecanica_padrao', 50.0))
+    perc_deposito_default = float(oficina_cfg.get('deposito_padrao', 15.0))
+    
+    perc_mec_init = float(st.session_state.get('input_margem_mec', perc_mecanica_default)) if is_master else perc_mecanica_default
+    perc_dep_init = float(st.session_state.get('input_perc_dep', perc_deposito_default)) if is_master else perc_deposito_default
+
+    total_tunagem_preview = val_base_init + (val_base_init * (perc_mec_init / 100.0))
+    val_deposito_preview = total_tunagem_preview * (perc_dep_init / 100.0)
+
+    subtotal_revenda_preview = sum(
+        float(st.session_state.get(f"rev_{it['cod_item']}", 0)) * float(it['valor'])
+        for it in itens_revenda
+    )
+    subtotal_parceiros_preview = sum(
+        float(st.session_state.get(f"parc_{it['cod_item']}", 0)) * float(it['valor'])
+        for it in itens_parceiro
+    )
+    total_geral_preview = subtotal_revenda_preview + subtotal_parceiros_preview + total_tunagem_preview
+
     # --- SUB-ABA: TUNAGEM & SERVIÇO ---
     with sub_tunagem:
-        st.markdown("<h4 style='margin-bottom: 8px; font-weight: 700;'>⚙️ Cálculo de Tunagem</h4>", unsafe_allow_html=True)
+        # 1. LINHA SUPERIOR COMPACTA: BANNER AZUL (ESQUERDA) + SALVAR DEPÓSITO (DIREITA)
+        c_top_banner, c_top_salvar = st.columns([1.5, 1.0])
+        
+        with c_top_banner:
+            st.markdown(f"""
+                <div class="total-banner-compact">
+                    <div class="total-title-compact">VALOR FINAL PARA O CLIENTE</div>
+                    <div class="total-value-compact">R$ {total_geral_preview:,.2f}</div>
+                    <div class="total-sub-compact">
+                        <span>Peças: <strong>R$ {subtotal_revenda_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Parceiros: <strong>R$ {subtotal_parceiros_preview:,.2f}</strong></span>
+                        <span>•</span>
+                        <span>Tunagem: <strong>R$ {total_tunagem_preview:,.2f}</strong></span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with c_top_salvar:
+            with st.expander("📝 Salvar Depósito no Supabase", expanded=True):
+                st.markdown(f"""
+                    <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); border-radius: 6px; padding: 5px 8px; text-align: center; margin-bottom: 6px;">
+                        <span style="color: #fbbf24; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
+                            DEPÓSITO REQUERIDO: R$ {val_deposito_preview:,.2f}
+                        </span>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                with st.form("form_deposito_tunagem_compact"):
+                    nome_cli_t = st.text_input("Nome do Cliente", placeholder="Ex: Roberto Carlos", key="input_nome_cli_t")
+                    veic_cli_t = st.text_input("Veículo / Placa", placeholder="Ex: Skyline R34 / ABC-1234", key="input_veic_cli_t")
+                    btn_salvar_dep_t = st.form_submit_button("Confirmar e Salvar Depósito", use_container_width=True, type="primary")
+                    
+                    if btn_salvar_dep_t:
+                        if not nome_cli_t.strip():
+                            st.error("Por favor, informe o nome do cliente.")
+                        else:
+                            try:
+                                login_autor = user.get('login', 'admin').strip().lower()
+                                veic_limpo = veic_cli_t.strip() if veic_cli_t else "N/A"
+                                veic_salvar = f"{veic_limpo} [@{login_autor}]"
+
+                                res_ins = supabase.table('depositos').insert({
+                                    'cliente': nome_cli_t.strip(),
+                                    'veiculo': veic_salvar,
+                                    'valor_deposito': val_deposito_preview,
+                                    'total_tunagem': total_tunagem_preview
+                                }).execute()
+                                
+                                if res_ins.data and len(res_ins.data) > 0:
+                                    novo_cod = str(res_ins.data[0].get('cod_deposito'))
+                                    oficina_cfg.setdefault("depositos_autores", {})[novo_cod] = login_autor
+                                    save_oficina_config(oficina_cfg)
+                                
+                                st.session_state['reset_calculo_needed'] = True
+                                st.success("✅ Depósito registrado com sucesso!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao salvar: {e}")
+
+        # 2. SEÇÃO DE CÁLCULO DE TUNAGEM (COMPACTA)
+        st.markdown("<h4 style='margin-top: 10px; margin-bottom: 4px; font-weight: 800; font-size: 1.15rem; color: #ffffff;'>⚙️ Cálculo de Tunagem</h4>", unsafe_allow_html=True)
         
         val_base_tunagem = st.number_input(
             "Valor Base da Tunagem (R$)",
@@ -1408,10 +1490,6 @@ with tab_calculo:
             key="input_tunagem_base"
         )
         
-        # Parâmetros: se for Master, pode alterar; se for Operador, fica bloqueado!
-        perc_mecanica_default = float(oficina_cfg.get('margem_mecanica_padrao', 50.0))
-        perc_deposito_default = float(oficina_cfg.get('deposito_padrao', 15.0))
-
         col_m1, col_m2 = st.columns(2)
         with col_m1:
             if is_master:
@@ -1454,19 +1532,20 @@ with tab_calculo:
         total_tunagem = val_base_tunagem + (val_base_tunagem * (perc_mecanica / 100.0))
         val_deposito = total_tunagem * (perc_deposito / 100.0)
 
+        # 3. CARD DE RESULTADOS DA TUNAGEM
         st.markdown(f"""
-            <div class="metric-card">
+            <div class="metric-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 14px; padding: 14px 18px; margin-top: 10px; margin-bottom: 6px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="color: #94a3b8; font-size: 0.85rem;">Margem Mecânica ({perc_mecanica:.0f}%):</span>
-                    <span style="font-weight: 600; font-family: monospace;">+ R$ {(val_base_tunagem * (perc_mecanica / 100.0)):,.2f}</span>
+                    <span style="color: #94a3b8; font-size: 0.86rem; font-weight: 600;">Margem Mecânica ({perc_mecanica:.0f}%):</span>
+                    <span style="font-weight: 700; font-family: monospace; color: #f8fafc; font-size: 0.95rem;">+ R$ {(val_base_tunagem * (perc_mecanica / 100.0)):,.2f}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(51,65,85,0.6);">
-                    <span style="color: #ffffff; font-weight: 700;">Total da Tunagem:</span>
-                    <span style="color: #4ade80; font-weight: 800; font-size: 1.15rem; font-family: monospace;">R$ {total_tunagem:,.2f}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+                    <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem;">Total da Tunagem:</span>
+                    <span style="color: #4ade80; font-weight: 900; font-size: 1.25rem; font-family: monospace;">R$ {total_tunagem:,.2f}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(245,158,11,0.5);">
-                    <span style="color: #f59e0b; font-weight: 700;">Depósito Requerido ({perc_deposito:.0f}%):</span>
-                    <span style="color: #fbbf24; font-weight: 800; font-size: 1.15rem; font-family: monospace;">R$ {val_deposito:,.2f}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(245, 158, 11, 0.45);">
+                    <span style="color: #f59e0b; font-weight: 800; font-size: 0.95rem;">Depósito Requerido ({perc_deposito:.0f}%):</span>
+                    <span style="color: #fbbf24; font-weight: 900; font-size: 1.25rem; font-family: monospace;">R$ {val_deposito:,.2f}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -1544,68 +1623,66 @@ with tab_calculo:
             """, unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
-    # RESUMO TOTAL GERAL
+    # RESUMO TOTAL GERAL (Exibido se houver Peças ou Parceiros adicionados)
     # -------------------------------------------------------------------------
     total_geral = subtotal_revenda + subtotal_parceiros + total_tunagem
 
-    st.markdown(f"""
-        <div class="total-banner">
-            <div class="total-title">Valor Final para o Cliente</div>
-            <div class="total-value">R$ {total_geral:,.2f}</div>
-            <div style="display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap;">
-                <span>Peças: <strong style="color: #e2e8f0;">R$ {subtotal_revenda:,.2f}</strong></span>
-                <span>·</span>
-                <span>Parceiros: <strong style="color: #e2e8f0;">R$ {subtotal_parceiros:,.2f}</strong></span>
-                <span>·</span>
-                <span>Tunagem: <strong style="color: #e2e8f0;">R$ {total_tunagem:,.2f}</strong></span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # -------------------------------------------------------------------------
-    # SALVAR DEPÓSITO
-    # -------------------------------------------------------------------------
-    if val_deposito > 0:
-        with st.expander("📝 Salvar Depósito no Supabase", expanded=True):
-            st.markdown(f"""
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 10px 14px; border-radius: 12px; margin-bottom: 12px;">
-                    <span style="color: #f59e0b; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Depósito Requerido:</span>
-                    <span style="color: #fbbf24; font-size: 1.2rem; font-weight: 800; font-family: monospace; margin-left: 8px;">R$ {val_deposito:,.2f}</span>
+    if (subtotal_revenda > 0 or subtotal_parceiros > 0):
+        st.markdown(f"""
+            <div class="total-banner">
+                <div class="total-title">Valor Final para o Cliente</div>
+                <div class="total-value">R$ {total_geral:,.2f}</div>
+                <div style="display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap;">
+                    <span>Peças: <strong style="color: #e2e8f0;">R$ {subtotal_revenda:,.2f}</strong></span>
+                    <span>·</span>
+                    <span>Parceiros: <strong style="color: #e2e8f0;">R$ {subtotal_parceiros:,.2f}</strong></span>
+                    <span>·</span>
+                    <span>Tunagem: <strong style="color: #e2e8f0;">R$ {total_tunagem:,.2f}</strong></span>
                 </div>
-            """, unsafe_allow_html=True)
-            
-            with st.form("form_deposito_modern"):
-                nome_cli = st.text_input("Nome do Cliente", placeholder="Ex: Roberto Carlos")
-                veic_cli = st.text_input("Veículo / Placa", placeholder="Ex: Skyline R34 / ABC-1234")
-                btn_salvar_dep = st.form_submit_button("Confirmar e Salvar Depósito", use_container_width=True, type="primary")
-                
-                if btn_salvar_dep:
-                    if not nome_cli.strip():
-                        st.error("Por favor, informe o nome do cliente.")
-                    else:
-                        try:
-                            login_autor = user.get('login', 'admin').strip().lower()
-                            veic_limpo = veic_cli.strip() if veic_cli else "N/A"
-                            veic_salvar = f"{veic_limpo} [@{login_autor}]"
+            </div>
+        """, unsafe_allow_html=True)
 
-                            res_ins = supabase.table('depositos').insert({
-                                'cliente': nome_cli.strip(),
-                                'veiculo': veic_salvar,
-                                'valor_deposito': val_deposito,
-                                'total_tunagem': total_tunagem
-                            }).execute()
-                            
-                            if res_ins.data and len(res_ins.data) > 0:
-                                novo_cod = str(res_ins.data[0].get('cod_deposito'))
-                                oficina_cfg.setdefault("depositos_autores", {})[novo_cod] = login_autor
-                                save_oficina_config(oficina_cfg)
-                            
-                            # Ativa flag para limpar todas as informações do cálculo no início do próximo ciclo
-                            st.session_state['reset_calculo_needed'] = True
-                            st.success("✅ Depósito registrado com sucesso! Informações limpas para um novo cálculo.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Erro ao salvar: {e}")
+        if val_deposito > 0:
+            with st.expander("📝 Salvar Depósito no Supabase", expanded=True):
+                st.markdown(f"""
+                    <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 10px 14px; border-radius: 12px; margin-bottom: 12px;">
+                        <span style="color: #f59e0b; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Depósito Requerido:</span>
+                        <span style="color: #fbbf24; font-size: 1.2rem; font-weight: 800; font-family: monospace; margin-left: 8px;">R$ {val_deposito:,.2f}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                with st.form("form_deposito_modern"):
+                    nome_cli = st.text_input("Nome do Cliente", placeholder="Ex: Roberto Carlos")
+                    veic_cli = st.text_input("Veículo / Placa", placeholder="Ex: Skyline R34 / ABC-1234")
+                    btn_salvar_dep = st.form_submit_button("Confirmar e Salvar Depósito", use_container_width=True, type="primary")
+                    
+                    if btn_salvar_dep:
+                        if not nome_cli.strip():
+                            st.error("Por favor, informe o nome do cliente.")
+                        else:
+                            try:
+                                login_autor = user.get('login', 'admin').strip().lower()
+                                veic_limpo = veic_cli.strip() if veic_cli else "N/A"
+                                veic_salvar = f"{veic_limpo} [@{login_autor}]"
+
+                                res_ins = supabase.table('depositos').insert({
+                                    'cliente': nome_cli.strip(),
+                                    'veiculo': veic_salvar,
+                                    'valor_deposito': val_deposito,
+                                    'total_tunagem': total_tunagem
+                                }).execute()
+                                
+                                if res_ins.data and len(res_ins.data) > 0:
+                                    novo_cod = str(res_ins.data[0].get('cod_deposito'))
+                                    oficina_cfg.setdefault("depositos_autores", {})[novo_cod] = login_autor
+                                    save_oficina_config(oficina_cfg)
+                                
+                                # Ativa flag para limpar todas as informações do cálculo no início do próximo ciclo
+                                st.session_state['reset_calculo_needed'] = True
+                                st.success("✅ Depósito registrado com sucesso! Informações limpas para um novo cálculo.")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erro ao salvar: {e}")
 
 # =============================================================================
 # ABA 2: LISTA DE DEPÓSITOS (PENDENTES & REALIZADOS - CONTROLE SIGILOSO POR USUÁRIO)
