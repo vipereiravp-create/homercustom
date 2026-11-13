@@ -245,6 +245,121 @@ st.markdown("""
         padding-top: 4px !important;
     }
 
+    /* ========================================================================= */
+    /* SEÇÃO SUPERIOR COMPACTA DA TUNAGEM (IGUAL À IMAGEM)                       */
+    /* ========================================================================= */
+    .total-banner-compact {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 55%, #0f172a 100%) !important;
+        border: 1px solid rgba(59, 130, 246, 0.55) !important;
+        border-radius: 14px !important;
+        padding: 18px 14px !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-height: 200px !important;
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.35) !important;
+        margin-bottom: 6px !important;
+    }
+
+    .total-title-compact {
+        color: #bfdbfe !important;
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.12em !important;
+        margin-bottom: 4px !important;
+    }
+
+    .total-value-compact {
+        color: #ffffff !important;
+        font-size: 2.25rem !important;
+        font-weight: 900 !important;
+        font-family: monospace !important;
+        letter-spacing: -0.02em !important;
+        margin: 4px 0 !important;
+    }
+
+    .total-sub-compact {
+        color: #93c5fd !important;
+        font-size: 0.73rem !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        margin-top: 4px !important;
+    }
+
+    .total-sub-compact strong {
+        color: #ffffff !important;
+    }
+
+    /* Expander e Formulário de Salvar Depósito Compacto */
+    div[data-testid="stExpander"] {
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1px solid rgba(51, 65, 85, 0.7) !important;
+        border-radius: 14px !important;
+        margin-bottom: 6px !important;
+    }
+
+    div[data-testid="stExpander"] details {
+        border: none !important;
+    }
+
+    div[data-testid="stExpander"] summary {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #e2e8f0 !important;
+        padding: 6px 10px !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stTextInput"] {
+        margin-bottom: 2px !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stTextInput"] label {
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        color: #94a3b8 !important;
+        margin-bottom: 2px !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stTextInput"] input {
+        height: 32px !important;
+        font-size: 0.82rem !important;
+        border-radius: 6px !important;
+        background: #090d16 !important;
+        border: 1px solid #334155 !important;
+    }
+
+    /* Botão Vermelho Coral "Confirmar e Salvar Depósito" (Idêntico à Imagem) */
+    div[data-testid="stExpander"] button[type="submit"] {
+        background: #e11d48 !important;
+        background-color: #e11d48 !important;
+        border: 1px solid #be123c !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        height: 34px !important;
+        border-radius: 8px !important;
+        margin-top: 6px !important;
+        transition: all 0.15s ease !important;
+    }
+
+    div[data-testid="stExpander"] button[type="submit"]:hover {
+        background: #f43f5e !important;
+        background-color: #f43f5e !important;
+        border-color: #e11d48 !important;
+    }
+
     /* Linhas de Itens: Centralização Vertical e Não-Quebra */
     div[data-testid="stHorizontalBlock"]:has(.item-card-marker) {
         display: flex !important;
