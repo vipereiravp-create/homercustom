@@ -150,11 +150,23 @@ st.markdown("""
         white-space: nowrap !important;
     }
 
-    /* Botões de Ação Compactos no Topo ([⚙️] e [🚪]) */
-    .icon-btn-container {
-        margin-top: 2px !important;
+    /* Botões de Ação Compactos no Topo ([⚙️] e [🚪]) Alinhados com as Abas */
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) {
+        position: relative !important;
+        z-index: 50 !important;
+        margin-top: 4px !important;
+        margin-bottom: -38px !important;
+        pointer-events: none !important;
     }
 
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div[data-testid="column"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div.stButton > button,
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div[data-testid="stPopover"] > button,
     .icon-btn-container div.stButton > button,
     .icon-btn-container div[data-testid="stPopover"] > button {
         height: 32px !important;
@@ -170,8 +182,11 @@ st.markdown("""
         justify-content: center !important;
         gap: 4px !important;
         transition: all 0.15s ease !important;
+        pointer-events: auto !important;
     }
 
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div.stButton > button:hover,
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div[data-testid="stPopover"] > button:hover,
     .icon-btn-container div.stButton > button:hover,
     .icon-btn-container div[data-testid="stPopover"] > button:hover {
         background: rgba(255, 255, 255, 0.1) !important;
@@ -187,7 +202,7 @@ st.markdown("""
         flex-direction: row !important;
         gap: 4px !important;
         background: transparent !important;
-        padding: 2px 0 0 0 !important;
+        padding: 2px 130px 0 0 !important;
         border-radius: 0 !important;
         border: none !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -196,6 +211,7 @@ st.markdown("""
         align-items: center !important;
         box-shadow: none !important;
         margin-bottom: 6px !important;
+        min-height: 36px !important;
     }
 
     .stTabs [data-baseweb="tab"] {
@@ -915,7 +931,9 @@ st.markdown("""
         border-color: #2563eb !important;
     }
 
-    /* Botões de Ícones do Topo */
+    /* Botões de Ícones do Topo (Modo Claro) */
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div.stButton > button,
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div[data-testid="stPopover"] > button,
     .icon-btn-container div.stButton > button,
     .icon-btn-container div[data-testid="stPopover"] > button {
         background: #ffffff !important;
@@ -923,6 +941,8 @@ st.markdown("""
         color: #0f172a !important;
     }
 
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div.stButton > button:hover,
+    div[data-testid="stHorizontalBlock"]:has(#tabs-actions-marker) div[data-testid="stPopover"] > button:hover,
     .icon-btn-container div.stButton > button:hover,
     .icon-btn-container div[data-testid="stPopover"] > button:hover {
         background: #f1f5f9 !important;
@@ -1285,7 +1305,7 @@ if st.session_state.get('show_welcome'):
 # Canto Esquerdo: Logo da Oficina + "Homer Custom"
 # Canto Direito: Foto 3x4 + Nome do Usuário (Centralizado verticalmente) + Botões [⚙️] [🚪 Sair]
 # -----------------------------------------------------------------------------
-col_head_left, col_head_right = st.columns([1.1, 1.3])
+col_head_left, col_head_right = st.columns([1.2, 1.2])
 
 with col_head_left:
     logo_atual = oficina_cfg.get("logo_url")
@@ -1305,18 +1325,18 @@ with col_head_left:
     """, unsafe_allow_html=True)
 
 with col_head_right:
-    # 1. Foto do Usuário + Nome + Cargo (Alinhados perfeitamente no topo)
+    # Foto do Usuário + Nome + Cargo (Alinhados perfeitamente no topo)
     if foto_user_logado:
         avatar_html = f'<img src="{foto_user_logado}" class="user-avatar-3x4" alt="Foto 3x4" />'
     else:
         avatar_html = f'<div class="user-avatar-placeholder">{user["nome"][:1].upper()}</div>'
 
     st.markdown(f"""
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 2px;">
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
             {avatar_html}
             <div style="text-align: right; min-width: 0;">
                 <div class="user-title-large">{user['nome']}</div>
-                <div style="margin-top: 1px;">
+                <div style="margin-top: 2px;">
                     <span style="background: rgba({ '245, 158, 11' if is_master else '37, 99, 235' }, 0.2); color: {cargo_badge_color}; border: 1px solid {cargo_badge_color}66; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
                         <span>{cargo_icone}</span> {user['cargo'].upper()}
                     </span>
@@ -1325,29 +1345,31 @@ with col_head_right:
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. Botões compactos: [⚙️ Engrenagem] depois [🚪 Sair]
-    st.markdown('<div class="icon-btn-container">', unsafe_allow_html=True)
-    c_space, c_gear_btn, c_exit_btn = st.columns([2.2, 1.0, 1.0])
-    with c_gear_btn:
-        with st.popover("⚙️", use_container_width=True):
-            st.markdown(f"<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px; color: {'#0f172a' if is_claro else '#ffffff'};'>🎨 Modo Visual</p>", unsafe_allow_html=True)
-            current_theme_idx = 1 if st.session_state.get('modo_visual') == '☀️ Claro' else 0
-            opcao_tema_selecionada = st.radio(
-                "Tema",
-                options=["🌙 Escuro (Oficina)", "☀️ Claro"],
-                index=current_theme_idx,
-                label_visibility="collapsed",
-                key="radio_modo_visual"
-            )
-            if opcao_tema_selecionada != st.session_state.get('modo_visual'):
-                st.session_state['modo_visual'] = opcao_tema_selecionada
-                oficina_cfg["modo_visual"] = opcao_tema_selecionada
-                save_oficina_config(oficina_cfg)
-                st.rerun()
-    with c_exit_btn:
-        if st.button("🚪", key="btn_logout_top", use_container_width=True, help="Sair do sistema"):
-            logout_user()
-    st.markdown('</div>', unsafe_allow_html=True)
+# -----------------------------------------------------------------------------
+# BOTÕES DE AÇÃO DO TOPO ([⚙️] e [🚪]) ALINHADOS COM A LINHA DAS ABAS
+# -----------------------------------------------------------------------------
+c_tabs_space, c_gear_btn, c_exit_btn = st.columns([10.5, 0.9, 0.8])
+with c_tabs_space:
+    st.markdown('<span id="tabs-actions-marker"></span>', unsafe_allow_html=True)
+with c_gear_btn:
+    with st.popover("⚙️", use_container_width=True):
+        st.markdown(f"<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 6px; color: {'#0f172a' if is_claro else '#ffffff'};'>🎨 Modo Visual</p>", unsafe_allow_html=True)
+        current_theme_idx = 1 if st.session_state.get('modo_visual') == '☀️ Claro' else 0
+        opcao_tema_selecionada = st.radio(
+            "Tema",
+            options=["🌙 Escuro (Oficina)", "☀️ Claro"],
+            index=current_theme_idx,
+            label_visibility="collapsed",
+            key="radio_modo_visual"
+        )
+        if opcao_tema_selecionada != st.session_state.get('modo_visual'):
+            st.session_state['modo_visual'] = opcao_tema_selecionada
+            oficina_cfg["modo_visual"] = opcao_tema_selecionada
+            save_oficina_config(oficina_cfg)
+            st.rerun()
+with c_exit_btn:
+    if st.button("🚪", key="btn_logout_top", use_container_width=True, help="Sair do sistema"):
+        logout_user()
 
 # -----------------------------------------------------------------------------
 # NAVEGAÇÃO PRINCIPAL EM ABAS NO TOPO:
