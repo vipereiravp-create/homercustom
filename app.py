@@ -611,76 +611,109 @@ st.markdown("""
     /* CARDS COMPACTOS DE DEPÓSITOS (PENDENTES & REALIZADOS)                    */
     /* ========================================================================= */
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker),
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) {
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) {
         background-color: #0c1322 !important;
         border: 1px solid rgba(51, 65, 85, 0.7) !important;
         border-radius: 12px !important;
-        padding: 10px 12px !important;
+        padding: 8px 12px !important;
         margin-bottom: 8px !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado),
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) {
-        border-color: rgba(34, 197, 94, 0.35) !important;
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.realizado) {
+        border-color: rgba(34, 197, 94, 0.4) !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente),
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.pendente) {
-        border-color: rgba(245, 158, 11, 0.35) !important;
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.pendente) {
+        border-color: rgba(245, 158, 11, 0.4) !important;
     }
 
-    /* Botões de Ação na Coluna da Direita (Empilhados Verticalmente) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton > button,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton > button {
-        height: 32px !important;
-        min-height: 32px !important;
+    /* Remove gaps excessivos dentro do card */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) > div[data-testid="stVerticalBlock"] {
+        gap: 0 !important;
+    }
+
+    /* Alinha colunas perfeitamente centralizadas verticalmente */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="stHorizontalBlock"],
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    /* Coluna Direita (Ações) - Empilhamento e gaps compactos */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stVerticalBlock"],
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stVerticalBlock"] {
+        gap: 4px !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"],
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"] {
+        margin-bottom: 0 !important;
+    }
+
+    /* Todos os botões da coluna de ações */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child button,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child button {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
         padding: 0 6px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.78rem !important;
         font-weight: 700 !important;
         border-radius: 6px !important;
-        margin-bottom: 4px !important;
+        margin: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        width: 100% !important;
     }
 
-    /* Botão de Excluir (🗑️) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button {
-        background: rgba(239, 68, 68, 0.08) !important;
-        border: 1px solid rgba(239, 68, 68, 0.3) !important;
-        color: #fca5a5 !important;
+    /* Botão de Excluir (1º item na coluna de ações) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(1) button,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(1) button {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border: 1px solid rgba(71, 85, 105, 0.5) !important;
+        color: #cbd5e1 !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button:hover,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button:hover {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(1) button:hover,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(1) button:hover {
         background: rgba(239, 68, 68, 0.22) !important;
         border-color: #ef4444 !important;
         color: #ffffff !important;
     }
 
-    /* Botão de Reabrir (↩️ Reabrir) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button {
-        background: rgba(30, 58, 138, 0.4) !important;
-        border: 1px solid rgba(59, 130, 246, 0.45) !important;
+    /* Botão de Reabrir (2º item na coluna de ações - Realizados) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button {
+        background: rgba(30, 58, 138, 0.5) !important;
+        border: 1px solid rgba(59, 130, 246, 0.55) !important;
         color: #93c5fd !important;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button:hover,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button:hover {
-        background: rgba(37, 99, 235, 0.5) !important;
-        border-color: #3b82f6 !important;
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button:hover,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button:hover {
+        background: rgba(37, 99, 235, 0.6) !important;
+        border-color: #60a5fa !important;
         color: #ffffff !important;
     }
 
-    /* Botão de Confirmar (✅ Confirmar) */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button,
-    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button {
-        background: rgba(20, 83, 45, 0.4) !important;
-        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+    /* Botão de Confirmar (2º item na coluna de ações - Pendentes) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button {
+        background: rgba(20, 83, 45, 0.5) !important;
+        border: 1px solid rgba(34, 197, 94, 0.55) !important;
         color: #86efac !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button:hover,
+    div[data-testid="stVerticalBlock"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div[data-testid="stElementContainer"]:nth-of-type(2) button:hover {
+        background: rgba(22, 101, 52, 0.7) !important;
+        border-color: #4ade80 !important;
+        color: #ffffff !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button:hover,
@@ -2046,11 +2079,10 @@ with tab_depositos:
                 autor_badge = f'<span style="background: rgba(99, 102, 241, 0.18); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.38); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">👤 Mecânico: @{dep_autor}</span>'
                 
                 with st.container(border=True):
-                    st.markdown('<div class="deposito-compact-marker pendente"></div>', unsafe_allow_html=True)
-                    c_info, c_valor, c_acts = st.columns([2.3, 1.8, 0.9])
+                    c_info, c_valor, c_acts = st.columns([2.2, 1.9, 0.9])
                     with c_info:
                         st.markdown(f"""
-                            <div style="min-width: 0;">
+                            <div class="deposito-compact-marker pendente" style="min-width: 0; line-height: 1.25;">
                                 <div style="color: #64748b; font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">
                                     Cód: #{dep_id}
                                 </div>
@@ -2072,12 +2104,12 @@ with tab_depositos:
                         st.markdown(f"""
                             <div style="text-align: center;">
                                 <div style="margin-bottom: 4px;">
-                                    <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.6); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
                                         ⏳ AGUARDANDO DEPÓSITO
                                     </span>
                                 </div>
-                                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 6px 10px;">
-                                    <div style="color: #fbbf24; font-weight: 900; font-size: 1.25rem; font-family: monospace; line-height: 1.15;">
+                                <div style="background: #090e18; border: 1.5px solid rgba(245, 158, 11, 0.5); border-radius: 10px; padding: 6px 10px;">
+                                    <div style="color: #fbbf24; font-weight: 900; font-size: 1.28rem; font-family: monospace; line-height: 1.15;">
                                         R$ {float(dep.get('valor_deposito', 0)):,.2f}
                                     </div>
                                     <div style="color: #94a3b8; font-size: 0.72rem; font-family: monospace; margin-top: 2px;">
@@ -2156,11 +2188,10 @@ with tab_depositos:
                 autor_badge = f'<span style="background: rgba(99, 102, 241, 0.18); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.38); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">👤 Mecânico: @{dep_autor}</span>'
                 
                 with st.container(border=True):
-                    st.markdown('<div class="deposito-compact-marker realizado"></div>', unsafe_allow_html=True)
-                    c_info, c_valor, c_acts = st.columns([2.3, 1.8, 0.9])
+                    c_info, c_valor, c_acts = st.columns([2.2, 1.9, 0.9])
                     with c_info:
                         st.markdown(f"""
-                            <div style="min-width: 0;">
+                            <div class="deposito-compact-marker realizado" style="min-width: 0; line-height: 1.25;">
                                 <div style="color: #64748b; font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">
                                     Cód: #{dep_id}
                                 </div>
@@ -2182,12 +2213,12 @@ with tab_depositos:
                         st.markdown(f"""
                             <div style="text-align: center;">
                                 <div style="margin-bottom: 4px;">
-                                    <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.6); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
                                         ✅ DEPÓSITO REALIZADO
                                     </span>
                                 </div>
-                                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 8px; padding: 6px 10px;">
-                                    <div style="color: #4ade80; font-weight: 900; font-size: 1.25rem; font-family: monospace; line-height: 1.15;">
+                                <div style="background: #090e18; border: 1.5px solid rgba(34, 197, 94, 0.5); border-radius: 10px; padding: 6px 10px;">
+                                    <div style="color: #4ade80; font-weight: 900; font-size: 1.28rem; font-family: monospace; line-height: 1.15;">
                                         R$ {float(dep.get('valor_deposito', 0)):,.2f}
                                     </div>
                                     <div style="color: #94a3b8; font-size: 0.72rem; font-family: monospace; margin-top: 2px;">
