@@ -607,6 +607,89 @@ st.markdown("""
         color: #cbd5e1 !important;
     }
 
+    /* ========================================================================= */
+    /* CARDS COMPACTOS DE DEPÓSITOS (PENDENTES & REALIZADOS)                    */
+    /* ========================================================================= */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker),
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) {
+        background-color: #0c1322 !important;
+        border: 1px solid rgba(51, 65, 85, 0.7) !important;
+        border-radius: 12px !important;
+        padding: 10px 12px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado),
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) {
+        border-color: rgba(34, 197, 94, 0.35) !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente),
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.pendente) {
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+
+    /* Botões de Ação na Coluna da Direita (Empilhados Verticalmente) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton > button,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton > button {
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 6px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
+        margin-bottom: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Botão de Excluir (🗑️) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button {
+        background: rgba(239, 68, 68, 0.08) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        color: #fca5a5 !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button:hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker) div[data-testid="column"]:last-child div.stButton:first-child > button:hover {
+        background: rgba(239, 68, 68, 0.22) !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+    }
+
+    /* Botão de Reabrir (↩️ Reabrir) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button {
+        background: rgba(30, 58, 138, 0.4) !important;
+        border: 1px solid rgba(59, 130, 246, 0.45) !important;
+        color: #93c5fd !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button:hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.realizado) div[data-testid="column"]:last-child div.stButton:last-child > button:hover {
+        background: rgba(37, 99, 235, 0.5) !important;
+        border-color: #3b82f6 !important;
+        color: #ffffff !important;
+    }
+
+    /* Botão de Confirmar (✅ Confirmar) */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button {
+        background: rgba(20, 83, 45, 0.4) !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        color: #86efac !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button:hover,
+    div[data-testid="stVerticalBlock"]:has(> div > div > .deposito-compact-marker.pendente) div[data-testid="column"]:last-child div.stButton:last-child > button:hover {
+        background: rgba(22, 163, 74, 0.5) !important;
+        border-color: #22c55e !important;
+        color: #ffffff !important;
+    }
+
     /* Banners e Métricas */
     .metric-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.95));
@@ -1960,52 +2043,51 @@ with tab_depositos:
             for dep in deps_pendentes:
                 dep_id = dep['cod_deposito']
                 dep_autor = get_deposito_autor(dep)
+                autor_badge = f'<span style="background: rgba(99, 102, 241, 0.18); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.38); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">👤 Mecânico: @{dep_autor}</span>'
                 
-                if is_master:
-                    autor_badge = f'<span style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.70rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;">👤 Mecânico: @{dep_autor}</span>'
-                else:
-                    autor_badge = f'<span style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; font-size: 0.70rem; padding: 2px 7px; border-radius: 6px;">👤 Por você</span>'
-                
-                with st.container():
-                    st.markdown(f"""
-                        <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                                <div>
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                        <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
-                                        <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
-                                            {get_veiculo_display(dep)}
-                                        </span>
-                                        {autor_badge}
-                                        <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
-                                            AGUARDANDO DEPÓSITO
-                                        </span>
-                                    </div>
-                                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;">
-                                        Cód: #{dep_id} · Data: {str(dep.get('data_criacao', ''))[:16]}
-                                    </div>
+                with st.container(border=True):
+                    st.markdown('<div class="deposito-compact-marker pendente"></div>', unsafe_allow_html=True)
+                    c_info, c_valor, c_acts = st.columns([2.3, 1.8, 0.9])
+                    with c_info:
+                        st.markdown(f"""
+                            <div style="min-width: 0;">
+                                <div style="color: #64748b; font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">
+                                    Cód: #{dep_id}
                                 </div>
-                                <div style="text-align: right;">
-                                    <div style="color: #fbbf24; font-weight: 800; font-size: 1.15rem; font-family: monospace;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
+                                    <span style="font-size: 1.05rem; font-weight: 900; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</span>
+                                    <span style="background: rgba(51, 65, 85, 0.7); color: #cbd5e1; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                        {get_veiculo_display(dep)}
+                                    </span>
+                                </div>
+                                <div style="margin-bottom: 4px;">
+                                    {autor_badge}
+                                </div>
+                                <div style="color: #64748b; font-size: 0.72rem;">
+                                    Data: {str(dep.get('data_criacao', ''))[:16]}
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c_valor:
+                        st.markdown(f"""
+                            <div style="text-align: center;">
+                                <div style="margin-bottom: 4px;">
+                                    <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
+                                        ⏳ AGUARDANDO DEPÓSITO
+                                    </span>
+                                </div>
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 6px 10px;">
+                                    <div style="color: #fbbf24; font-weight: 900; font-size: 1.25rem; font-family: monospace; line-height: 1.15;">
                                         R$ {float(dep.get('valor_deposito', 0)):,.2f}
                                     </div>
-                                    <div style="color: #94a3b8; font-size: 0.72rem;">
+                                    <div style="color: #94a3b8; font-size: 0.72rem; font-family: monospace; margin-top: 2px;">
                                         Total: R$ {float(dep.get('total_tunagem', 0)):,.2f}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Botões de Ação: Check de Confirmação & Excluir
-                    col_sp, col_check, col_del = st.columns([2.5, 1.8, 0.9])
-                    with col_check:
-                        if st.button("✅ Confirmar Depósito", key=f"btn_check_dep_{dep_id}", use_container_width=True):
-                            st.session_state[f"ask_confirm_dep_{dep_id}"] = True
-                            st.rerun()
-                    with col_del:
+                        """, unsafe_allow_html=True)
+                    with c_acts:
                         if st.button("🗑️", key=f"del_dep_{dep_id}", help="Excluir depósito", use_container_width=True):
-                            # Validação de permissão
                             if not is_master and dep_autor != current_login:
                                 st.error("Acesso negado: você só pode excluir seus próprios depósitos.")
                             else:
@@ -2020,15 +2102,18 @@ with tab_depositos:
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao excluir: {e}")
+                        if st.button("✅ Confirmar", key=f"btn_check_dep_{dep_id}", use_container_width=True, help="Confirmar realização do depósito"):
+                            st.session_state[f"ask_confirm_dep_{dep_id}"] = True
+                            st.rerun()
                                 
                     # Caixa de Confirmação: Sim ou Não
                     if st.session_state.get(f"ask_confirm_dep_{dep_id}", False):
                         st.markdown(f"""
-                            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #f59e0b; border-radius: 12px; padding: 14px; margin: 4px 0 12px 0; text-align: center;">
-                                <div style="color: #fbbf24; font-weight: 800; font-size: 1.05rem; margin-bottom: 4px;">
+                            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px; margin: 6px 0 10px 0; text-align: center;">
+                                <div style="color: #fbbf24; font-weight: 800; font-size: 0.95rem; margin-bottom: 2px;">
                                     ⚠️ Confirmação de Depósito
                                 </div>
-                                <div style="color: #ffffff; font-size: 0.92rem; margin-bottom: 12px;">
+                                <div style="color: #ffffff; font-size: 0.88rem; margin-bottom: 10px;">
                                     Tem certeza que realizou o depósito de <strong>R$ {float(dep.get('valor_deposito', 0)):,.2f}</strong> para <strong>{dep.get('cliente', '')}</strong>?
                                 </div>
                             </div>
@@ -2041,18 +2126,16 @@ with tab_depositos:
                                     st.error("Acesso negado: você só pode confirmar seus próprios depósitos.")
                                 else:
                                     try:
-                                        # Marca no Supabase com [REALIZADO]
                                         veic_atual = dep.get('veiculo', '')
                                         if "[REALIZADO]" not in veic_atual:
                                             novo_veic = f"[REALIZADO] {veic_atual}".strip()
                                             supabase.table('depositos').update({'veiculo': novo_veic}).eq('cod_deposito', dep_id).execute()
                                             
-                                        # Salva também na config local
                                         oficina_cfg.setdefault("depositos_realizados", {})[str(dep_id)] = True
                                         save_oficina_config(oficina_cfg)
                                         
                                         st.session_state[f"ask_confirm_dep_{dep_id}"] = False
-                                        st.success(f"✅ Depósito #{dep_id} confirmado com sucesso e transferido para Depósitos Realizados!")
+                                        st.success(f"✅ Depósito #{dep_id} confirmado com sucesso!")
                                         st.rerun()
                                     except Exception as e:
                                         st.error(f"Erro ao confirmar depósito: {e}")
@@ -2070,45 +2153,65 @@ with tab_depositos:
             for dep in deps_realizados:
                 dep_id = dep['cod_deposito']
                 dep_autor = get_deposito_autor(dep)
+                autor_badge = f'<span style="background: rgba(99, 102, 241, 0.18); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.38); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">👤 Mecânico: @{dep_autor}</span>'
                 
-                if is_master:
-                    autor_badge = f'<span style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.70rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;">👤 Mecânico: @{dep_autor}</span>'
-                else:
-                    autor_badge = f'<span style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; font-size: 0.70rem; padding: 2px 7px; border-radius: 6px;">👤 Por você</span>'
-                
-                with st.container():
-                    st.markdown(f"""
-                        <div class="deposito-card-row" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(34, 197, 94, 0.4); border-left: 5px solid #22c55e; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                                <div>
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                        <strong style="font-size: 1rem; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</strong>
-                                        <span style="background: rgba(51,65,85,0.7); color: #cbd5e1; font-size: 0.72rem; padding: 2px 6px; border-radius: 6px;">
-                                            {get_veiculo_display(dep)}
-                                        </span>
-                                        {autor_badge}
-                                        <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
-                                            ✅ DEPÓSITO REALIZADO
-                                        </span>
-                                    </div>
-                                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;">
-                                        Cód: #{dep_id} · Data: {str(dep.get('data_criacao', ''))[:16]}
-                                    </div>
+                with st.container(border=True):
+                    st.markdown('<div class="deposito-compact-marker realizado"></div>', unsafe_allow_html=True)
+                    c_info, c_valor, c_acts = st.columns([2.3, 1.8, 0.9])
+                    with c_info:
+                        st.markdown(f"""
+                            <div style="min-width: 0;">
+                                <div style="color: #64748b; font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">
+                                    Cód: #{dep_id}
                                 </div>
-                                <div style="text-align: right;">
-                                    <div style="color: #4ade80; font-weight: 800; font-size: 1.15rem; font-family: monospace;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
+                                    <span style="font-size: 1.05rem; font-weight: 900; color: #ffffff;">{dep.get('cliente', 'Sem Nome')}</span>
+                                    <span style="background: rgba(51, 65, 85, 0.7); color: #cbd5e1; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                        {get_veiculo_display(dep)}
+                                    </span>
+                                </div>
+                                <div style="margin-bottom: 4px;">
+                                    {autor_badge}
+                                </div>
+                                <div style="color: #64748b; font-size: 0.72rem;">
+                                    Data: {str(dep.get('data_criacao', ''))[:16]}
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c_valor:
+                        st.markdown(f"""
+                            <div style="text-align: center;">
+                                <div style="margin-bottom: 4px;">
+                                    <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 4px;">
+                                        ✅ DEPÓSITO REALIZADO
+                                    </span>
+                                </div>
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 8px; padding: 6px 10px;">
+                                    <div style="color: #4ade80; font-weight: 900; font-size: 1.25rem; font-family: monospace; line-height: 1.15;">
                                         R$ {float(dep.get('valor_deposito', 0)):,.2f}
                                     </div>
-                                    <div style="color: #94a3b8; font-size: 0.72rem;">
+                                    <div style="color: #94a3b8; font-size: 0.72rem; font-family: monospace; margin-top: 2px;">
                                         Total: R$ {float(dep.get('total_tunagem', 0)):,.2f}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    col_sp, col_reopen, col_del = st.columns([3.0, 1.3, 0.9])
-                    with col_reopen:
+                        """, unsafe_allow_html=True)
+                    with c_acts:
+                        if st.button("🗑️", key=f"del_dep_real_{dep_id}", help="Excluir histórico", use_container_width=True):
+                            if not is_master and dep_autor != current_login:
+                                st.error("Acesso negado: você só pode excluir seus próprios depósitos.")
+                            else:
+                                try:
+                                    supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
+                                    if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
+                                        del oficina_cfg["depositos_realizados"][str(dep_id)]
+                                    if str(dep_id) in oficina_cfg.get("depositos_autores", {}):
+                                        del oficina_cfg["depositos_autores"][str(dep_id)]
+                                    save_oficina_config(oficina_cfg)
+                                    st.success(f"Depósito #{dep_id} removido!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Erro ao excluir: {e}")
                         if st.button("↩️ Reabrir", key=f"reopen_dep_{dep_id}", help="Mover de volta para pendentes", use_container_width=True):
                             if not is_master and dep_autor != current_login:
                                 st.error("Acesso negado: você só pode reabrir seus próprios depósitos.")
@@ -2125,22 +2228,6 @@ with tab_depositos:
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao reabrir: {e}")
-                    with col_del:
-                        if st.button("🗑️", key=f"del_dep_real_{dep_id}", help="Excluir histórico", use_container_width=True):
-                            if not is_master and dep_autor != current_login:
-                                st.error("Acesso negado: você só pode excluir seus próprios depósitos.")
-                            else:
-                                try:
-                                    supabase.table('depositos').delete().eq('cod_deposito', dep_id).execute()
-                                    if str(dep_id) in oficina_cfg.get("depositos_realizados", {}):
-                                        del oficina_cfg["depositos_realizados"][str(dep_id)]
-                                    if str(dep_id) in oficina_cfg.get("depositos_autores", {}):
-                                        del oficina_cfg["depositos_autores"][str(dep_id)]
-                                    save_oficina_config(oficina_cfg)
-                                    st.success(f"Depósito #{dep_id} removido!")
-                                    st.rerun()
-                                except Exception as e:
-                                    st.error(f"Erro ao excluir: {e}")
 
 # =============================================================================
 # ABA 3: PAINEL MASTER (VISÍVEL APENAS PARA QUEM TIVER O CARGO MASTER!)

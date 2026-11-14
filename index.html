@@ -430,6 +430,7 @@
           veiculo: veiculo || 'N/A',
           valor: valorDepositoCalculado,
           totalTunagem: totalTunagem,
+          mecanico: currentUser?.login || currentUser?.nome || 'admin',
           status: 'pendente'
         };
 
@@ -905,53 +906,80 @@
                     ) : (
                       listaExibida.map((dep) => {
                         const isReal = (dep.status === 'realizado');
+                        const totalCalculado = dep.totalTunagem || (dep.valor / 0.15);
                         return (
-                          <div key={dep.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-md">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                              <div>
+                          <div key={dep.id} className="bg-slate-900/90 border border-slate-800/80 p-3.5 sm:p-4 rounded-2xl shadow-lg hover:border-slate-700/80 transition-all space-y-3">
+                            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                              {/* COLUNA ESQUERDA: Cód, Cliente + Veículo, Mecânico, Data */}
+                              <div className="flex-1 space-y-1.5 min-w-[200px]">
+                                <div className="text-[11px] font-mono text-slate-500 font-semibold">
+                                  Cód: #{String(dep.id).replace('dep_', '')}
+                                </div>
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <h4 className="font-bold text-white text-base">{dep.cliente}</h4>
-                                  <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">{dep.veiculo}</span>
-                                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                                    isReal ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                  }`}>
-                                    {isReal ? '✅ Depósito Realizado' : '⏳ Aguardando Depósito'}
+                                  <h4 className="font-bold text-white text-base tracking-tight">{dep.cliente}</h4>
+                                  <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono border border-slate-700/50">
+                                    {dep.veiculo || 'N/A'}
                                   </span>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-1">Data: {dep.data}</p>
+                                <div className="pt-0.5">
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-950/60 border border-indigo-500/30 text-indigo-300">
+                                    👤 Mecânico: <strong className="text-indigo-200">@{dep.mecanico || 'admin'}</strong>
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-400 font-mono">
+                                  Data: {dep.data}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                                <div className="text-right">
-                                  <span className="text-xs text-slate-400 block uppercase">Valor Depósito</span>
-                                  <span className={`text-lg font-mono font-bold ${isReal ? 'text-emerald-400' : 'text-amber-400'}`}>
+
+                              {/* COLUNA CENTRAL: Status no topo + Caixa de Valor em baixo */}
+                              <div className="flex flex-col items-center justify-center gap-1.5 min-w-[220px]">
+                                <div className={`px-3 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wide border ${
+                                  isReal 
+                                    ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400' 
+                                    : 'bg-amber-950/60 border-amber-500/50 text-amber-400'
+                                }`}>
+                                  {isReal ? '✅ DEPÓSITO REALIZADO' : '⏳ AGUARDANDO DEPÓSITO'}
+                                </div>
+                                
+                                <div className="w-full bg-slate-950/80 border border-slate-800/90 rounded-xl px-4 py-2 text-center shadow-inner">
+                                  <div className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${
+                                    isReal ? 'text-emerald-400' : 'text-amber-400'
+                                  }`}>
                                     R$ {dep.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                  </span>
+                                  </div>
+                                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                    Total: R$ {totalCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  {!isReal ? (
-                                    <button
-                                      onClick={() => setConfirmingDepId(confirmingDepId === dep.id ? null : dep.id)}
-                                      className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm transition-all"
-                                    >
-                                      <span>✅</span> Confirmar
-                                    </button>
-                                  ) : (
-                                    <button
-                                      onClick={() => reabrirDeposito(dep.id)}
-                                      className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm transition-all"
-                                      title="Reabrir depósito para pendentes"
-                                    >
-                                      <span>↩️</span> Reabrir
-                                    </button>
-                                  )}
+                              </div>
+
+                              {/* COLUNA DIREITA: Botões Verticais */}
+                              <div className="flex md:flex-col items-center justify-center gap-2 self-center md:self-stretch min-w-[90px]">
+                                <button
+                                  onClick={() => alterarStatusDeposito(dep.id)}
+                                  className="h-8 w-8 md:w-full flex items-center justify-center bg-slate-800/80 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700/60 hover:border-rose-500/40 rounded-lg text-sm transition-all"
+                                  title="Remover depósito"
+                                >
+                                  🗑️
+                                </button>
+
+                                {!isReal ? (
                                   <button
-                                    onClick={() => alterarStatusDeposito(dep.id)}
-                                    className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-xl"
-                                    title="Remover depósito"
+                                    onClick={() => setConfirmingDepId(confirmingDepId === dep.id ? null : dep.id)}
+                                    className="h-8 px-3 md:w-full flex items-center justify-center gap-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 rounded-lg text-xs font-bold transition-all shadow-sm"
+                                    title="Confirmar depósito"
                                   >
-                                    🗑️
+                                    <span>✅</span> Confirmar
                                   </button>
-                                </div>
+                                ) : (
+                                  <button
+                                    onClick={() => reabrirDeposito(dep.id)}
+                                    className="h-8 px-3 md:w-full flex items-center justify-center gap-1 bg-sky-950/50 hover:bg-sky-900/60 text-sky-400 border border-sky-500/40 rounded-lg text-xs font-bold transition-all shadow-sm"
+                                    title="Reabrir depósito para pendentes"
+                                  >
+                                    <span>↩️</span> Reabrir
+                                  </button>
+                                )}
                               </div>
                             </div>
 
